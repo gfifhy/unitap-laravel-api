@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->string('student_id');
-            $table->bigInteger('wallet_id');
             $table->string('status');
             $table->timestamps();
             $table->softDeletes();
