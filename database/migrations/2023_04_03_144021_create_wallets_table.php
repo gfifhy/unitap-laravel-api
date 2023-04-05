@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('wallets', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->uuid('id')->primary();
             $table->char('user_id');
             $table->integer('balance');
             $table->boolean('isDisabled');

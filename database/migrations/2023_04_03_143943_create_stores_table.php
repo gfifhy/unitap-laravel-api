@@ -14,10 +14,10 @@ return new class extends Migration
     public function up()
     {
         Schema::create('stores', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->uuid('id')->primary();
             $table->char('user_id');
-            $table->string('username');
-            $table->string('password');
+            $table->string('nfc_id');
+            $table->string('store_name');
             $table->timestamps();
             $table->softDeletes();
         });
