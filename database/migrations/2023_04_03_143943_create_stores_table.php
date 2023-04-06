@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('stores', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->char('user_id');
-            $table->string('nfc_id');
             $table->string('store_name');
             $table->timestamps();
             $table->softDeletes();
