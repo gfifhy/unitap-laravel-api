@@ -41,7 +41,12 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware(['api', 'auth:sanctum'])
                 ->prefix('api')
-                ->group(base_path('routes/api/student/api.php'));
+                ->group(base_path('routes/api/student/student.php'));
+
+
+            Route::middleware(['api', 'auth:sanctum'])
+                ->prefix('api')
+                ->group(base_path('routes/api/admin/admin.php'));
 
         });
     }
@@ -59,7 +64,7 @@ class RouteServiceProvider extends ServiceProvider
             });
         });
 
-        RateLimiter::for('verifyUser', function (Request $request) {
+        RateLimiter::for('loginThrottle', function (Request $request) {
         return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())->response(function (Request $request){
             return $this->throwException('Too many request. Try again later', '429');
         });

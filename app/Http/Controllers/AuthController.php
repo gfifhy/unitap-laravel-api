@@ -16,7 +16,7 @@ use function PHPUnit\Framework\isEmpty;
 class AuthController extends Controller
 {
     use ExceptionTrait;
-    public function register(Request $request){
+    public function addStudent(Request $request){
         $fields = $request->validate([
             'nfc_id' => 'required|string',
             'first_name' => 'required|string',
@@ -82,7 +82,7 @@ class AuthController extends Controller
             return  $this->throwException('Wrong password', '400');
         }
         //create token
-        $token = $user->createToken('userToken')->plainTextToken;
+        $token = $user->createToken('token')->plainTextToken;
         $result = [
             'student' => $student,
             'token' => $token
