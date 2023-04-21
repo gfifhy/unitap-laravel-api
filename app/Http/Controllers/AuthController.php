@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GuidanceStaff;
 use App\Models\Role;
+use App\Models\SchoolLocation;
+use App\Models\SecurityGuard;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\Wallet;
@@ -57,7 +60,43 @@ class AuthController extends Controller
      <h1 style="font-family: Josefin Sans, sans-serif;"> NOTES </h1>
      <p style="font-style: italic;font-family: Josefin Sans, sans-serif;"> Bale pwede ko rin gawing isang function nalang yung pag login ng mga personnel. Gagamit lang ako if else </p>
      */
-    public function adminLogin(Request $request){
+    public function adminLogin(Request $request)
+    {
+        $fields = $request->validate([
+            'email' => 'required|string',
+            'password' => 'required|string',
+            'role_id' => 'required|string',
+        ]);
+
+        //ito magiging role nalang since general na nga.
+        $role = Role::where('id', $fields['role_id'])->first();
+        if(!$role){
+            return $this->throwException('Invalid role id', 400);
+        }
+        $user = User::where('email', $fields['email'])->first();
+        if(!$user) {
+            return $this->throwException('Email Does Not Exist', 400);
+        }
+        if(!Hash::check($fields['password'], $user->password)) {
+            return $this->throwException('Wrong Password!', 400);
+        }
+        $role = Role::find($user->role_id);
+        $token = $user->createToken('token')->plainTextToken;
+
+        if($role->slug == 'admin') {
+            $result = [
+                'user' => $user,
+                'role' => $role,
+                'token' => $token,
+            ];
+            return $result;
+        }
+        else {
+            return $this->throwException('Invalid role', 400);
+        }
+    }
+
+    public function staffLogin(Request $request){
         //bale labas ng if else to
         $fields = $request->validate([
            'email' => 'required|string',
@@ -70,24 +109,40 @@ class AuthController extends Controller
         if(!$role){
             return $this->throwException('Invalid role id', 400);
         }
+        $user = User::where('email', $fields['email'])->first();
+        if(!$user) {
+            return $this->throwException('Email Does Not Exist', 400);
+        }
+        if(!Hash::check($fields['password'], $user->password)) {
+            return $this->throwException('Wrong Password!', 400);
+        }
+        $role = Role::find($user->role_id);
+        $token = $user->createToken('token')->plainTextToken;
 
-        if($role->slug == 'admin') {
-            $user = User::where('email', $fields['email'])->first();
-            if(!$user) {
-                return $this->throwException('Email Does Not Exist', 400);
-            }
-            if(!Hash::check($fields['password'], $user->password)) {
-                return $this->throwException('Wrong Password!', 400);
-            }
-            $role = Role::find($user->role_id);
-            $token = $user->createToken('token')->plainTextToken;
-
-            $result = [
+        if($role->slug == 'store') {
+            return response([
                 'user' => $user,
                 'role' => $role,
                 'token' => $token,
-            ];
-            return $result;
+            ], 201);
+        }
+        else if ($role->slug == 'security-guard') {
+            $guardInfo = SecurityGuard::where('user_id', $user->id)->first();
+            $guardInfo->location = SchoolLocation::where('id', $guardInfo->location_id)->first();
+            return $guardInfo;
+            return response([
+                'information' => $guardInfo,
+                'user' => $user,
+                'role' => $role,
+                'token' => $token,
+            ], 201);
+        }
+        else if ($role->slug == 'guidance-staff') {
+            return response([
+                'user' => $user,
+                'role' => $role,
+                'token' => $token,
+            ], 201);
         }
         else {
             return $this->throwException('Invalid role', 400);

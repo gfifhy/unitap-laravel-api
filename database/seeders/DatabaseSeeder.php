@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\SchoolLocation;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -28,5 +29,6 @@ class DatabaseSeeder extends Seeder
         $this->call(UsersTableSeeder::class);
         $this->call(ViolationsTableSeeder::class);
         $this->call(WalletsTableSeeder::class);
+        $this->call(SchoolLocationsTableSeeder::class);
     }
 }

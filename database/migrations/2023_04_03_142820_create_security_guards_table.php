@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('security_guards', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->char('user_id');
-            $table->char('location_assigned');
+            $table->char('location_id');
             $table->timestamps();
             $table->softDeletes();
         });

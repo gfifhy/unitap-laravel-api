@@ -9,4 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 class SecurityGuard extends Model
 {
     use HasFactory, HasUuids;
+    protected $fillable = [
+        'id',
+        'location_id',
+    ];
 }

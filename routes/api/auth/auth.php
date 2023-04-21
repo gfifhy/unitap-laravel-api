@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 Route::group(['middleware' => ['throttle:loginThrottle']], function(){
     Route::post('/student/login', [AuthController::class,'studentLogin'])->name('auth.studentLogin');
     Route::post('/admin/login', [AuthController::class,'adminLogin'])->name('auth.adminLogin');
+    Route::post('/staff/login', [AuthController::class,'staffLogin'])->name('auth.staffLogin');
 });
 
 Route::group(['middleware' => ['auth:sanctum']], function(){
