@@ -6,6 +6,7 @@ use App\Models\GuidanceStaff;
 use App\Models\Role;
 use App\Models\SchoolLocation;
 use App\Models\SecurityGuard;
+use App\Models\Store;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\Wallet;
@@ -120,7 +121,9 @@ class AuthController extends Controller
         $token = $user->createToken('token')->plainTextToken;
 
         if($role->slug == 'store') {
+            $storeInfo = Store::where('user_id', $user->id)->first();
             return response([
+                'information' => $storeInfo,
                 'user' => $user,
                 'role' => $role,
                 'token' => $token,
@@ -129,7 +132,6 @@ class AuthController extends Controller
         else if ($role->slug == 'security-guard') {
             $guardInfo = SecurityGuard::where('user_id', $user->id)->first();
             $guardInfo->location = SchoolLocation::where('id', $guardInfo->location_id)->first();
-            return $guardInfo;
             return response([
                 'information' => $guardInfo,
                 'user' => $user,
