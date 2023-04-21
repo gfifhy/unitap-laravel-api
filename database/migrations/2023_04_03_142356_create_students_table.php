@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->char('user_id');
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->char('guardian_id');
+            $table->char('contact_number');
             $table->string('student_id');
             $table->string('status');
             $table->timestamps();

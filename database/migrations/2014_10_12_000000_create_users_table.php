@@ -17,8 +17,12 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->char('role_id');
             $table->string('nfc_id')->nullable();
+            $table->string('first_name');
+            $table->string('middle_name')->nullable();
+            $table->string('last_name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('user_image')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

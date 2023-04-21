@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('guidance_staffs', function (Blueprint $table) {
+        Schema::create('student_guardians', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->char('user_id');
             $table->string('first_name');
+            $table->string('middle_name')->nullable();
             $table->string('last_name');
+            $table->char('contact');
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('guidance_staffs');
+        Schema::dropIfExists('student_guardians');
     }
 };

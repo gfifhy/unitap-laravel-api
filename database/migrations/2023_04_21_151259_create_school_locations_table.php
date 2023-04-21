@@ -13,9 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('violations', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('violation_name');
+        Schema::create('school_locations', function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('violations');
+        Schema::dropIfExists('school_locations');
     }
 };
