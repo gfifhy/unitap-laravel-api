@@ -16,81 +16,6 @@ use function PHPUnit\Framework\isEmpty;
 class AuthController extends Controller
 {
     use ExceptionTrait;
-    public function addStaff(Request $request){
-        $fields = $request->validate([
-            'email' => 'required|string|unique:users,email',
-            'password' => 'required|string|confirmed|min:8',
-            'nfc_id' => 'string',
-            'role' => 'required|string',
-            'role_id' => 'required|string',
-        ]);
-        if($fields['role'] === 'admin'){
-            $user = User::create([
-                'email' => $fields['email'],
-                'password' => bcrypt($fields['password']),
-                'nfc_id' => $fields['nfc_id'],
-            ]);
-            return response($user, 201);
-
-        }
-        elseif($fields['role'] === 'store'){
-
-        }
-        elseif($fields['role'] === 'security-guard'){
-
-        }
-        elseif($fields['role'] === 'guidance-staff'){
-
-        }
-        else{
-            return $this->throwException('Invalid role', 400);
-        }
-
-
-    }
-    public function addStudent(Request $request){
-        $fields = $request->validate([
-            'nfc_id' => 'required|string',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'student_id' => 'required|string|unique:students,student_id',
-            'email' => 'required|string|unique:users,email',
-            'role_id' => 'required|string',
-            'password' => 'required|string|confirmed|min:8',
-        ]);
-
-
-        $role = Role::where('slug', 'student')->first();
-        if(!$role){
-            return $this->throwException('Role Does not exist', 400);
-        }
-
-        $user = User::create([
-            'role_id' => $role->id,
-            'nfc_id' => $fields['nfc_id'],
-            'email' => $fields['email'],
-            'password' => bcrypt($fields['password']),
-        ]);
-
-        $wallet = Wallet::create([
-            'user_id' => $user->id,
-            'balance' => 0,
-            'isDisabled' => 0
-        ]);
-        $student = Student::create([
-            'user_id' => $user->id,
-            'first_name' => $fields['first_name'],
-            'last_name' => $fields['last_name'],
-            'student_id' => $fields['student_id'],
-            'status' => 'on-premise',
-        ]);
-        $response =[
-            'user' => $user,
-            'student' => $student,
-            'wallet' => $wallet
-        ];
-        return response($response, 201);
-    }
     public function studentLogin(Request $request){
         $fields = $request->validate([
             'student_id' => 'required|string',
@@ -167,9 +92,6 @@ class AuthController extends Controller
         else {
             return $this->throwException('Invalid role', 400);
         }
-
-
-
     }
     public function profile(Request $request){
         //auth()->user()->role;

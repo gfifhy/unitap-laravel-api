@@ -23,6 +23,9 @@ class Student extends Model
         'student_id',
         'wallet_id',
         'status',
+        'contact_number',
+        'guardian_id',
+
     ];
 
     protected $hidden = [
