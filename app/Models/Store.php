@@ -9,4 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Store extends Model
 {
     use HasFactory, HasUuids;
+    protected $hidden = [
+        'created_at',
+    ];
 }

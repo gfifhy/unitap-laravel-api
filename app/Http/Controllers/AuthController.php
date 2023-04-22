@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GuidanceStaff;
 use App\Models\Role;
 use App\Models\SchoolLocation;
 use App\Models\SecurityGuard;
@@ -12,10 +11,8 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Traits\ExceptionTrait;
 use Illuminate\Support\Facades\Hash;
-use function PHPUnit\Framework\isEmpty;
 
 class AuthController extends Controller
 {
@@ -53,7 +50,8 @@ class AuthController extends Controller
             'wallet' => $wallet,
             'token' => $token
         ];
-        return response($result, 201);
+        $cookie = cookie('auth_token', $token, strtotime('2 days'), null, null, false);
+        return response($result, 201)->withCookie($cookie);
     }
 
 
@@ -90,7 +88,7 @@ class AuthController extends Controller
                 'role' => $role,
                 'token' => $token,
             ];
-            return $result;
+            return response($result, 201);
         }
         else {
             return $this->throwException('Invalid role', 400);
@@ -157,7 +155,7 @@ class AuthController extends Controller
             'user_data' => $student,
             'user' => Auth::user(),
         ];
-        return $result;
+        return response($result, 201)->withCookie(cookie('user_id', Auth::user()->id, $minutes = 60, null, null, true, true));
     }
     public function logout(Request $request){
         auth()->user()->tokens()->delete();
