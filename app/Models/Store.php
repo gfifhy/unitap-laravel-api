@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 class Store extends Model
 {
     use HasFactory, HasUuids;
+
+    protected $fillable = [
+        'store_name',
+    ];
     protected $hidden = [
         'created_at',
     ];

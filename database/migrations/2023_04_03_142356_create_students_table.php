@@ -19,7 +19,7 @@ return new class extends Migration
             $table->char('guardian_id');
             $table->char('contact_number');
             $table->string('student_id');
-            $table->string('status');
+            $table->char('location_id');
             $table->timestamps();
             $table->softDeletes();
         });

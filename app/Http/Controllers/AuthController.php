@@ -9,6 +9,7 @@ use App\Models\Store;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\Wallet;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\ExceptionTrait;
@@ -42,7 +43,7 @@ class AuthController extends Controller
         //role details
         $role = Role::find($user->role_id);
         //create token
-        $token = $user->createToken('token')->plainTextToken;
+        $token = $user->createToken('token', Carbon::now()->addDays(3))->plainTextToken;
         $wallet = Wallet::where('user_id', $user->id)->first();
         $result = [
             'user' => $student,
@@ -80,8 +81,7 @@ class AuthController extends Controller
             return $this->throwException('Wrong Password!', 400);
         }
         $role = Role::find($user->role_id);
-        $token = $user->createToken('token')->plainTextToken;
-
+        $token = $user->createToken('token', Carbon::now()->addDays(3))->plainTextToken;
         if($role->slug == 'admin') {
             $result = [
                 'user' => $user,
@@ -116,7 +116,7 @@ class AuthController extends Controller
             return $this->throwException('Wrong Password!', 400);
         }
         $role = Role::find($user->role_id);
-        $token = $user->createToken('token')->plainTextToken;
+        $token = $user->createToken('token', Carbon::now()->addDays(3))->plainTextToken;
 
         if($role->slug == 'store') {
             $storeInfo = Store::where('user_id', $user->id)->first();
@@ -130,12 +130,15 @@ class AuthController extends Controller
         else if ($role->slug == 'security-guard') {
             $guardInfo = SecurityGuard::where('user_id', $user->id)->first();
             $guardInfo->location = SchoolLocation::where('id', $guardInfo->location_id)->first();
-            return response([
+            $result =  response([
                 'information' => $guardInfo,
                 'user' => $user,
                 'role' => $role,
                 'token' => $token,
             ], 201);
+            Auth()->guard_information = $result;
+
+            return $result;
         }
         else if ($role->slug == 'guidance-staff') {
             return response([
@@ -150,10 +153,22 @@ class AuthController extends Controller
     }
     public function profile(Request $request){
         //auth()->user()->role;
-        $student = Student::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
+        if(Auth::user()->role->slug == 'student'){
+            $user_data = Student::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
+        }
+        else if(Auth::user()->role->slug == 'store'){
+            $user_data = Store::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
+        }
+        else if(Auth::user()->role->slug == 'security-guard'){
+            $user_data = SecurityGuard::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
+        }
+        else {
+            $user_data = "";
+        }
+
         $result = [
-            'user_data' => $student,
-            'user' => Auth::user(),
+            'user_data' => $user_data,
+            'user' => auth()->user(),
         ];
         return response($result, 201)->withCookie(cookie('user_id', Auth::user()->id, $minutes = 60, null, null, true, true));
     }

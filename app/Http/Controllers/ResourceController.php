@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
+use App\Models\SecurityGuard;
+use App\Models\Store;
 use App\Models\Student;
 use App\Models\StudentGuardian;
 use App\Models\User;
@@ -18,6 +20,7 @@ class ResourceController extends Controller
             'role' => 'required|string',
             'role_id' => 'required|string',
         ]);
+        $middle_name = (isset($request['middle_name']) ? $request['middle_name'] : null );
         $role = Role::find($roleFields['role_id'])->where('id' , $roleFields['role_id'])->first();
         if(!$role){
             return $this->throwException('Invalid role', 401);
@@ -27,11 +30,16 @@ class ResourceController extends Controller
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
                 'nfc_id' => 'required|string',
+                'first_name' => 'required|string',
+                'last_name' => 'required|string',
             ]);
             $user = User::create([
                 'email' => $adminFields['email'],
                 'password' => bcrypt($adminFields['password']),
                 'nfc_id' => $adminFields['nfc_id'],
+                'first_name' => $adminFields['first_name'],
+                'middle_name' => $middle_name,
+                'last_name' => $adminFields['last_name'],
             ]);
             return response($user, 201);
 
@@ -42,14 +50,68 @@ class ResourceController extends Controller
                 'password' => 'required|string|min:8',
                 'nfc_id' => 'required|string',
                 'store_name' => 'required|string',
+                'first_name' => 'required|string',
+                'last_name' => 'required|string',
             ]);
+
+            $user = User::create([
+                'email' => $storeFields['email'],
+                'password' => $storeFields['password'],
+                'nfc_id' => $storeFields['nfc_id'],
+                'first_name' => $storeFields['first_name'],
+                'middle_name' => $middle_name,
+                'last_name' => $storeFields['last_name'],
+            ]);
+            $store = Store::create([
+                'user_id' => $user->id,
+                'store_name' => $storeFields['store_name'],
+            ]);
+            $result = ['user' => $user, 'store' => $store];
+            return response($result, 201);
 
         }
         elseif($roleFields['role'] === 'security-guard'){
+            $guardFields = $request->validate([
+                'email' => 'required|string|unique:users,email',
+                'password' => 'required|string|min:8',
+                'nfc_id' => 'required|string',
+                'first_name' => 'required|string',
+                'last_name' => 'required|string',
+            ]);
+            $middle_name = (isset($request['middle_name']) ? $request['middle_name'] : null );
+            $user = User::create([
+                'email' => $guardFields['email'],
+                'password' => $guardFields['password'],
+                'nfc_id' => $guardFields['nfc_id'],
+                'first_name' => $guardFields['first_name'],
+                'middle_name' => $middle_name,
+                'last_name' => $guardFields['last_name'],
+            ]);
+            $guard = SecurityGuard::create([
+                'user_id' => $user->id,
+                'location_id' => '4b090ffc-41f8-498d-973a-5944f4fdeaad',
+            ]);
+            $result = ['user' => $user, 'security_guard' => $guard];
+            return response($result, 201);
 
         }
         elseif($roleFields['role'] === 'guidance-staff'){
-
+            $guidanceFields = $request->validate([
+            'email' => 'required|string|unique:users,email',
+            'password' => 'required|string|min:8',
+            'nfc_id' => 'required|string',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+        ]);
+            $user = User::create([
+                'email' => $guidanceFields['email'],
+                'password' => bcrypt($guidanceFields['password']),
+                'nfc_id' => $guidanceFields['nfc_id'],
+                'first_name' => $guidanceFields['first_name'],
+                'middle_name' => $middle_name,
+                'last_name' => $guidanceFields['last_name'],
+            ]);
+            return response($user, 201);
         }
         else{
             return $this->throwException('Invalid role', 400);
@@ -73,6 +135,7 @@ class ResourceController extends Controller
             'guardian_middle_name' => 'required|string',
             'guardian_last_name' => 'required|string',
             'guardian_contact' => 'required|string',
+            'student_image' => 'required|image',
         ]);
 
 
@@ -85,6 +148,9 @@ class ResourceController extends Controller
             'nfc_id' => $fields['nfc_id'],
             'email' => $fields['email'],
             'password' => bcrypt($fields['password']),
+            'first_name' => $fields['first_name'],
+            'middle_name' => $fields['middle_name'],
+            'last_name' => $fields['last_name'],
         ]);
 
         $wallet = Wallet::create([
@@ -101,9 +167,6 @@ class ResourceController extends Controller
         ]);
         $student = Student::create([
             'user_id' => $user->id,
-            'first_name' => $fields['first_name'],
-            'middle_name' => $fields['middle_name'],
-            'last_name' => $fields['last_name'],
             'student_id' => $fields['student_id'],
             'status' => 'on-premise',
             'contact_number' => $fields['contact'],

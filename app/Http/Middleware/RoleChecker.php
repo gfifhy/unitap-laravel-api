@@ -14,7 +14,7 @@ class RoleChecker
     public function handle($request, Closure $next, ...$roles)
     {
         foreach($roles as $role) {
-            if(auth()->user()->role->name === $role){
+            if(auth()->user()->role->slug === $role){
                 return $next($request);
             }
         }

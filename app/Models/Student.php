@@ -22,7 +22,7 @@ class Student extends Model
         'last_name',
         'student_id',
         'wallet_id',
-        'status',
+        'location_id',
         'contact_number',
         'guardian_id',
 
@@ -33,4 +33,7 @@ class Student extends Model
         'deleted_at'
     ];
 
+    public function location() {
+        return $this->belongsTo(SchoolLocation::class, 'location_id');
+    }
 }

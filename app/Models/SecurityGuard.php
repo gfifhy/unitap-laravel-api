@@ -13,4 +13,13 @@ class SecurityGuard extends Model
         'id',
         'location_id',
     ];
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
+    public function location() {
+        return $this->belongsTo(SchoolLocation::class, 'location_id');
+    }
+
 }

@@ -49,7 +49,7 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/api/admin/admin.php'));
 
             Route::middleware(['api', 'auth:sanctum'])
-                ->prefix('api/guard')
+                ->prefix('api/security-guard')
                 ->group(base_path('routes/api/guard/guard.php'));
 
         });
