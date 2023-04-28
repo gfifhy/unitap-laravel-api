@@ -49,9 +49,9 @@ class AuthController extends Controller
             'user' => $student,
             'role' => $role,
             'wallet' => $wallet,
-            'token' => $token
         ];
-        $cookie = cookie('auth_token', $token, strtotime('2 days'), null, null, false);
+
+        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
         return response($result, 201)->withCookie($cookie);
     }
 
@@ -86,9 +86,9 @@ class AuthController extends Controller
             $result = [
                 'user' => $user,
                 'role' => $role,
-                'token' => $token,
             ];
-            return response($result, 201);
+            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+            return response($result, 201)->withCookie($cookie);
         }
         else {
             return $this->throwException('Invalid role', 400);
@@ -170,7 +170,7 @@ class AuthController extends Controller
             'user_data' => $user_data,
             'user' => auth()->user(),
         ];
-        return response($result, 201)->withCookie(cookie('user_id', Auth::user()->id, $minutes = 60, null, null, true, true));
+        return response($result, 201);
     }
     public function logout(Request $request){
         auth()->user()->tokens()->delete();

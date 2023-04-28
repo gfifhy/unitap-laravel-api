@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('user_image')->nullable();
+            $table->string('user_signature')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

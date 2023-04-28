@@ -17,3 +17,4 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('profile', [AuthController::class, 'profile'])->name('auth.profile2');
 
 });
+Route::get('test', [\App\Http\Controllers\ResourceController::class, 'test'])->name('auth.test');

@@ -9,12 +9,26 @@ use App\Models\Student;
 use App\Models\StudentGuardian;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Services\Utils\FileServiceInterface;
 use App\Traits\ExceptionTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
 class ResourceController extends Controller
 {
     use ExceptionTrait;
+    private $fileService;
+    private $studentSignatureFolderName;
+    private $studentImageFolderName;
+    private $storeFolderName;
+    private $productFolderName;
+
+    public function __construct(FileServiceInterface $fileService)
+    {
+        $this->fileService = $fileService;
+        $this->studentSignatureFolderName = config('storage.base_path') . 'student_signature';
+        $this->studentImageFolderName = config('storage.base_path') . 'student_image';
+    }
     public function addStaff(Request $request){
         $roleFields = $request->validate([
             'role' => 'required|string',
@@ -135,7 +149,8 @@ class ResourceController extends Controller
             'guardian_middle_name' => 'required|string',
             'guardian_last_name' => 'required|string',
             'guardian_contact' => 'required|string',
-            'student_image' => 'required|image',
+            'student_image' => 'required|mimes:jpeg,png,jpg|max:15720',
+            'student_signature' => 'required|mimes:jpeg,png,jpg|max:15720',
         ]);
 
 
@@ -168,16 +183,34 @@ class ResourceController extends Controller
         $student = Student::create([
             'user_id' => $user->id,
             'student_id' => $fields['student_id'],
-            'status' => 'on-premise',
+            'location_id' => '231eeaaa-28a5-409e-b1f4-e5c2f27b93fc',
             'contact_number' => $fields['contact'],
             'guardian_id' => $guardian->id,
         ]);
+
+        //take image
+        $studentImage = $request->file('student_image');
+        $studentSignature = $request->file('student_signature');
+        $studentImageFileName = $student->student_id. '.' . $studentImage->getClientOriginalExtension();
+        $studentSignatureFileName = $student->student_id. '.' . $studentSignature->getClientOriginalExtension();
+
+        $studentImage = $request->file('student_image');
+        $studentSignature = $request->file('student_signature');
+
+        $user->user_image = $this->fileService->upload($this->studentImageFolderName, $student->student_id, $studentImage, $user->id);
+        $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $student->student_id, $studentSignature, $user->id);
+        $user->save();
         $response =[
             'user' => $user,
             'guardian' => $guardian,
             'student' => $student,
-            'wallet' => $wallet
+            'wallet' => $wallet,
+            'USER_ID' => $user->id,
         ];
         return response($response, 201);
+    }
+
+    public function test(Request $request) {
+        //return $this->fileService->download('develop/develop/student_image/K11831245.jpg', '9904fa5b-53e6-425c-81dc-81dde0503e31');
     }
 }
