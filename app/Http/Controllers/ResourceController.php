@@ -14,6 +14,8 @@ use App\Traits\ExceptionTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ResourceController extends Controller
 {
@@ -180,6 +182,14 @@ class ResourceController extends Controller
 
     }
     public function addStudent(Request $request){
+
+        if(!in_array(explode(';',explode('/',explode(',', $request->student_image)[0])[1])[0], array('jpg','jpeg','png')) ) {
+            $this->throwException('student_image has invalid file type', 422);
+        }
+
+        if(!in_array(explode(';',explode('/',explode(',', $request->student_signature)[0])[1])[0], array('jpg','jpeg','png')) ) {
+            $this->throwException('student_signature has invalid file type', 422);
+        }
         $fields = $request->validate([
             'nfc_id' => 'required|string',
             'first_name' => 'required|string',
@@ -195,9 +205,10 @@ class ResourceController extends Controller
             'guardian_middle_name' => 'required|string',
             'guardian_last_name' => 'required|string',
             'guardian_contact' => 'required|string',
-            'student_image' => 'required|mimes:jpeg,png,jpg|max:15720',
-            'student_signature' => 'required|mimes:jpeg,png,jpg|max:15720',
+            'student_image' => 'required|string',
+            'student_signature' => 'required|string',
         ]);
+
 
 
         $role = Role::where('slug', $fields['role'])->where('id', $fields['role_id'])->first();
@@ -234,13 +245,12 @@ class ResourceController extends Controller
             'guardian_id' => $guardian->id,
         ]);
 
-        //take image
-        $studentImage = $request->file('student_image');
-        $studentSignature = $request->file('student_signature');
 
+
+        //take image
         $filename = md5($user->id.Carbon::now()->timestamp);
-        $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $studentImage, $user->id);
-        $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename, $studentSignature, $user->id);
+        $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $request->student_image, $user->id);
+        $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename, $request->student_signature, $user->id);
         $user->save();
         $response =[
             'user' => $user,
@@ -252,7 +262,8 @@ class ResourceController extends Controller
     }
 
     public function test(Request $request) {
-        return md5("123".Carbon::now()->timestamp);
+        return $this->fileService->download('develop/develop/user_image/a2a746c8e9d812c63123329f5c469b2f.jpeg','990caccd-8609-4471-aa29-81daa7b75ab3');
+        //return md5("123".Carbon::now()->timestamp);
         //return $this->filzeService->download('develop/develop/student_image/K11831245.jpg', '9904fa5b-53e6-425c-81dc-81dde0503e31');
     }
 }
