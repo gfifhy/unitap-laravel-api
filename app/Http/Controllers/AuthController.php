@@ -87,7 +87,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'role' => $role,
             ];
-            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, false);
             return response($result, 201)->withCookie($cookie);
         }
         else {
