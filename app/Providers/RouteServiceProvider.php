@@ -52,6 +52,14 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api/security-guard')
                 ->group(base_path('routes/api/guard/guard.php'));
 
+            Route::middleware(['api', 'auth:sanctum'])
+                ->prefix('api/store')
+                ->group(base_path('routes/api/store/store.php'));
+
+            Route::middleware(['api', 'auth:sanctum'])
+                ->prefix('api/guidance')
+                ->group(base_path('routes/api/guidance/guidance.php'));
+
         });
     }
 

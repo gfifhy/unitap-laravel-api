@@ -165,21 +165,21 @@ class AuthController extends Controller
     }
     public function profile(Request $request){
         //auth()->user()->role;
-        $user_data = [];
+        $user_data = array();
         $user_info = User::where('id', Auth::user()->id)->first();
         $user_info->user_image = $this->fileService->download($user_info->user_image, Auth::user()->id);
         $user_info->user_signature = $this->fileService->download($user_info->user_signature, Auth::user()->id);
-
         if(Auth::user()->role->slug == 'student'){
-            $user_data->student = Student::where('user_id', Auth::user()->id)->first();
-            $user_data->wallet = Wallet::where('user_id', Auth::user()->id)->first();
-            $user_data->transactions->sent = Transaction::where('wallet_id_sender', Auth::user()->id)->first();
-            $user_data->transactions->received = Transaction::where('wallet_id_receiver', Auth::user()->id)->first();
-            $user_data->violations = StudentViolation::where('violator_id', Auth::user()->id)->first();
-
+            $user_data['student'] = Student::where('user_id', Auth::user()->id)->first();
+            $user_data['wallet'] = Wallet::where('user_id', Auth::user()->id)->first();
+            $user_data['transactions']['sent'] = Transaction::where('wallet_id_sender', Auth::user()->id)->first();
+            $user_data['transactions']['received'] = Transaction::where('wallet_id_receiver', Auth::user()->id)->first();
+            $user_data['violations'] = StudentViolation::where('violator_id', Auth::user()->id)->first();
         }
         else if(Auth::user()->role->slug == 'store'){
-            $user_data = Store::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
+            $user_data['store'] = Store::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();$user_data['wallet'] = Wallet::where('user_id', Auth::user()->id)->first();
+            $user_data['transactions']['sent'] = Transaction::where('wallet_id_sender', Auth::user()->id)->first();
+            $user_data['transactions']['received'] = Transaction::where('wallet_id_receiver', Auth::user()->id)->first();
         }
         else if(Auth::user()->role->slug == 'security-guard'){
             $user_data = SecurityGuard::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
