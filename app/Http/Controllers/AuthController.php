@@ -96,7 +96,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'role' => $role,
             ];
-            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, false, false, "None");
+            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
             return response($result, 201)->withCookie($cookie);
         }
         else {
@@ -129,36 +129,39 @@ class AuthController extends Controller
 
         if($role->slug == 'store') {
             $storeInfo = Store::where('user_id', $user->id)->first();
-            return response([
+            $result = [
                 'information' => $storeInfo,
                 'user' => $user,
                 'role' => $role,
                 'token' => $token,
-            ], 201);
+            ];
         }
         else if ($role->slug == 'security-guard') {
             $guardInfo = SecurityGuard::where('user_id', $user->id)->first();
             $guardInfo->location = SchoolLocation::where('id', $guardInfo->location_id)->first();
-            $result =  response([
+            $result = [
                 'information' => $guardInfo,
                 'user' => $user,
                 'role' => $role,
                 'token' => $token,
-            ], 201);
+            ];
             Auth()->guard_information = $result;
 
             return $result;
         }
         else if ($role->slug == 'guidance-staff') {
-            return response([
+            $result = [
                 'user' => $user,
                 'role' => $role,
                 'token' => $token,
-            ], 201);
+            ];
         }
         else {
             return $this->throwException('Invalid role', 400);
         }
+
+        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+        return response($result, 201)->withCookie($cookie);
     }
     public function profile(Request $request){
         //auth()->user()->role;
