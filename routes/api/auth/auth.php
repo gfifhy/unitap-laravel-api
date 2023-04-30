@@ -13,8 +13,8 @@ Route::group(['middleware' => ['throttle:loginThrottle']], function(){
 });
 
 Route::group(['middleware' => ['auth:sanctum']], function(){
-    Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
-    Route::get('profile', [AuthController::class, 'profile'])->name('auth.profile2');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::get('/profile', [AuthController::class, 'profile'])->name('auth.profile');
 
 });
 Route::get('test', [\App\Http\Controllers\ResourceController::class, 'test'])->name('auth.test');

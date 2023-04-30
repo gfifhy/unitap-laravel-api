@@ -7,8 +7,11 @@ use App\Models\SchoolLocation;
 use App\Models\SecurityGuard;
 use App\Models\Store;
 use App\Models\Student;
+use App\Models\StudentViolation;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Services\Utils\FileServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +21,12 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
 {
     use ExceptionTrait;
+
+    private $fileService;
+    public function __construct(FileServiceInterface $fileService)
+    {
+        $this->fileService = $fileService;
+    }
     public function studentLogin(Request $request){
         $fields = $request->validate([
             'student_id' => 'required|string',
@@ -153,8 +162,18 @@ class AuthController extends Controller
     }
     public function profile(Request $request){
         //auth()->user()->role;
+        $user_data = [];
+        $user_info = User::where('id', Auth::user()->id)->first();
+        $user_info->user_image = $this->fileService->download($user_info->user_image, Auth::user()->id);
+        $user_info->user_signature = $this->fileService->download($user_info->user_signature, Auth::user()->id);
+
         if(Auth::user()->role->slug == 'student'){
-            $user_data = Student::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
+            $user_data->student = Student::where('user_id', Auth::user()->id)->first();
+            $user_data->wallet = Wallet::where('user_id', Auth::user()->id)->first();
+            $user_data->transactions->sent = Transaction::where('wallet_id_sender', Auth::user()->id)->first();
+            $user_data->transactions->received = Transaction::where('wallet_id_receiver', Auth::user()->id)->first();
+            $user_data->violations = StudentViolation::where('violator_id', Auth::user()->id)->first();
+
         }
         else if(Auth::user()->role->slug == 'store'){
             $user_data = Store::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
@@ -168,7 +187,7 @@ class AuthController extends Controller
 
         $result = [
             'user_data' => $user_data,
-            'user' => auth()->user(),
+            'user' => $user_info,
         ];
         return response($result, 201);
     }
