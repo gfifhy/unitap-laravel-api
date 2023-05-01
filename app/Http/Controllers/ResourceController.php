@@ -58,7 +58,7 @@ class ResourceController extends Controller
             $adminFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
-                'nfc_id' => 'required|string',
+                'nfc_id' => 'string',
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
                 'user_image' => 'required|string',
@@ -84,10 +84,14 @@ class ResourceController extends Controller
 
         }
         else if($role->slug === 'store'){
+
+            if(!in_array(explode(';',explode('/',explode(',', $request->store_logo)[0])[1])[0], array('jpg','jpeg','png')) ) {
+                $this->throwException('store logo has invalid file type', 422);
+            }
             $storeFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
-                'nfc_id' => 'required|string',
+                'nfc_id' => 'string',
                 'store_name' => 'required|string',
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
@@ -109,7 +113,10 @@ class ResourceController extends Controller
                 'store_name' => $storeFields['store_name'],
             ]);
             $result = ['user' => $user, 'store' => $store];
-
+            //image
+            $filename = $storeFields['store_name']."_".md5($user->id.Carbon::now()->timestamp);
+            $store->store_logo = $this->fileService->upload("store_logo", $filename, $request->store_logo, $user->id);
+            $store->save();
             //take image
             $filename = md5($user->id.Carbon::now()->timestamp);
             $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $request->user_image, $user->id);
@@ -122,7 +129,7 @@ class ResourceController extends Controller
             $guardFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
-                'nfc_id' => 'required|string',
+                'nfc_id' => 'string',
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
                 'user_image' => 'required|string',
@@ -286,8 +293,18 @@ class ResourceController extends Controller
         }
         return $result;
     }
-    public function test(Request $request) {
-        //return md5("123".Carbon::now()->timestamp);
-        //return $this->filzeService->download('develop/develop/student_image/K11831245.jpg', '9904fa5b-53e6-425c-81dc-81dde0503e31');
+    public function walletTopUp(Request $request){
+        $fields = $request->validate([
+            'user_id' => 'required|string',
+            'value' => 'required|string'
+        ]);
+
+        $wallet = Wallet::where('user_id', $fields['user_id'])->first();
+        if(!$wallet) {
+            return $this->throwException('Wallet not found', 422);
+        }
+        $wallet->balance += $fields['value'];
+        $wallet->save();
+        return $wallet;
     }
 }

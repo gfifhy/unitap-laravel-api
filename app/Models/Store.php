@@ -12,6 +12,8 @@ class Store extends Model
 
     protected $fillable = [
         'store_name',
+        'store_logo',
+        'user_id'
     ];
     protected $hidden = [
         'created_at',
