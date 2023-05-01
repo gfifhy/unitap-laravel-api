@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\StudentViolation;
 use App\Models\User;
 use App\Models\Violation;
+use App\Services\Utils\FileServiceInterface;
 use App\Traits\ExceptionTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,12 @@ use Laravel\Sanctum\Guard;
 class SecurityGuardController extends Controller
 {
     use ExceptionTrait;
+    private $fileService;
+    public function __construct(FileServiceInterface $fileService)
+    {
+        $this->fileService = $fileService;
+    }
+
     public function studentEntry(Request $request) {
         $fields = $request->validate([
             'user_id' => 'required|string',
@@ -35,7 +42,11 @@ class SecurityGuardController extends Controller
             'location_id' => $guard->location_id,
             'user_id' => $student->id,
         ]);
-        return response(['security-guard' => $guard, 'student' => $student], 200);
+
+
+        $studentUser->user_image = $this->fileService->download($studentUser->user_image, $studentUser->id);
+        $studentUser->user_signature = $this->fileService->download($studentUser->user_signature, $studentUser->id);
+        return response(['security-guard' => $guard, 'student' => $student, 'student_user' => $studentUser], 200);
     }
 
     public function violationList(){

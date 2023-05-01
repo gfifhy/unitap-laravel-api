@@ -19,6 +19,7 @@ return new class extends Migration
             $table->char('buyer_id');
             $table->char('seller_id');
             $table->char('quantity');
+            $table->char('status');
             $table->timestamps();
         });
     }

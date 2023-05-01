@@ -19,7 +19,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        return User::whereNull('deleted_at')->orderBy('role_id')->paginate(2);
+        return User::whereNull('deleted_at')->orderBy('role_id')->paginate(5);
     }
 
     /**

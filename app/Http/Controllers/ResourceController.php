@@ -115,7 +115,7 @@ class ResourceController extends Controller
             $result = ['user' => $user, 'store' => $store];
             //image
             $filename = $storeFields['store_name']."_".md5($user->id.Carbon::now()->timestamp);
-            $store->store_logo = $this->fileService->upload("store_logo", $filename, $request->store_logo, $user->id);
+            $store->store_logo = $this->fileService->upload("develop/store_logo", $filename, $request->store_logo, $user->id);
             $store->save();
             //take image
             $filename = md5($user->id.Carbon::now()->timestamp);
