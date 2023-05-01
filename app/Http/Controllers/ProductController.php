@@ -25,7 +25,7 @@ class ProductController extends Controller
         foreach($products as $product){
             $product->image = $this->fileService->download($product->image, $product->user_id);;
         }
-        return response($product, 201);
+        return response($products, 201);
     }
 
     public function store(Request $request)
