@@ -23,9 +23,9 @@ class ProductController extends Controller
     public function index() {
         $products = Product::whereNull('deleted_at')->where('user_id', auth()->user()->id)->get();
         foreach($products as $product){
-            $product->image = $this->fileService->download($product->image, $product->user_id);
+            $product->image = $this->fileService->download($product->image, $product->user_id);;
         }
-        return $product;
+        return response($product, 201);
     }
 
     public function store(Request $request)
