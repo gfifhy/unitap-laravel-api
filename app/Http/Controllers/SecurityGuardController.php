@@ -43,10 +43,10 @@ class SecurityGuardController extends Controller
             'user_id' => $student->id,
         ]);
 
-
+        $violation = StudentViolation::where('status', 'violated')->where('violator_id', $studentUser->id)->get();
         $studentUser->user_image = $this->fileService->download($studentUser->user_image, $studentUser->id);
         $studentUser->user_signature = $this->fileService->download($studentUser->user_signature, $studentUser->id);
-        return response(['security-guard' => $guard, 'student' => $student, 'student_user' => $studentUser], 200);
+        return response(['security-guard' => $guard, 'student' => $student, 'student_user' => $studentUser, 'violations' => $violation], 200);
     }
 
     public function violationList(){
@@ -57,7 +57,6 @@ class SecurityGuardController extends Controller
             'violation_id' => 'required|string',
             'violator_id' => 'required|string',
             'guard_id' => 'required|string',
-            'status' => 'required|string',
             'note' => 'string',
         ]);
 
@@ -65,7 +64,7 @@ class SecurityGuardController extends Controller
             'violation_id' => $fields['violation_id'],
             'violator_id' => $fields['violator_id'],
             'guard_id' => $fields['guard_id'],
-            'status' => $fields['status'],
+            'status' => 'violated',
             'note' => $fields['note'],
         ]);
 

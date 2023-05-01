@@ -16,6 +16,7 @@ use App\Services\Utils\FileServiceInterface;
 use App\Traits\ExceptionTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -113,6 +114,12 @@ class ResourceController extends Controller
                 'store_name' => $storeFields['store_name'],
             ]);
             $result = ['user' => $user, 'store' => $store];
+
+            $wallet = Wallet::create([
+                'user_id' => $user->id,
+                'balance' => 0,
+                'isDisabled' => 0
+            ]);
             //image
             $filename = $storeFields['store_name']."_".md5($user->id.Carbon::now()->timestamp);
             $store->store_logo = $this->fileService->upload("develop/store_logo", $filename, $request->store_logo, $user->id);
@@ -306,5 +313,17 @@ class ResourceController extends Controller
         $wallet->balance += $fields['value'];
         $wallet->save();
         return $wallet;
+    }
+
+    public function walletStatus() {
+        $wallet = Wallet::where('user_id', Auth::user()->id)->first();
+        $wallet->isDisabled = !$wallet->isDisabled;
+        $wallet->save();
+        return $wallet;
+    }
+
+    public function getViolationForStudent() {
+        //990fdab1-553d-4fe0-8e49-5f4d35537d75
+        return StudentViolation::where('status', 'violated')->where('violator_id', Auth::user()->id)->get();
     }
 }

@@ -19,7 +19,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        return User::whereNull('deleted_at')->orderBy('role_id')->paginate(5);
+        return User::whereNull('deleted_at')->orderBy('role_id')->paginate(15);
     }
 
     /**
@@ -53,6 +53,12 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $array = json_decode($request, true);
+        return $array;
+// Loop through the array using foreach
+        foreach ($array as $key => $value) {
+            echo $key . ': ' . $value . '<br>';
+        }
 
     }
 

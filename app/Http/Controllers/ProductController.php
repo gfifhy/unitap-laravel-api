@@ -62,12 +62,17 @@ class ProductController extends Controller
 
         $fields = $request->validate([
             'product_name' => 'required|string',
-            'user_id' => 'string',
-            'description' => 'string',
-            'image' => 'required|string',
             'stock' => 'required|string',
             'price' => 'required|string',
         ]);
+        $product = Product::where('id', $id);
+        $product->product_name = $fields['product_name'];
+        $product->stock = $fields['stock'];
+        $product->price = $fields['price'];
+        $product->save();
+
+        return response($product, 201);
+
     }
 
     /**
@@ -83,4 +88,6 @@ class ProductController extends Controller
         $product->save();
         return $product;
     }
+
+
 }
