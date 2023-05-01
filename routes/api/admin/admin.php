@@ -13,6 +13,9 @@ Route::group(['middleware' => ['role:admin']], function(){
     Route::get('/users/{id}', [UserController::class, 'show'])->name('show.users');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('archive.users');
     Route::get('/roles', [RoleController::class, 'index'])->name('index.role');
+    Route::get('/data/location', [ResourceController::class, 'getCountOfStudentPerLocation'])->name('data.location');
+    Route::get('/data/violation', [ResourceController::class, 'totalViolation'])->name('data.violation');
+
 });
 
 

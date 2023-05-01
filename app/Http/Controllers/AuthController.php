@@ -63,12 +63,6 @@ class AuthController extends Controller
         $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
         return response($result, 201)->withCookie($cookie);
     }
-
-
-    /**
-     <h1 style="font-family: Josefin Sans, sans-serif;"> NOTES </h1>
-     <p style="font-style: italic;font-family: Josefin Sans, sans-serif;"> Bale pwede ko rin gawing isang function nalang yung pag login ng mga personnel. Gagamit lang ako if else </p>
-     */
     public function adminLogin(Request $request)
     {
         $fields = $request->validate([
@@ -103,7 +97,6 @@ class AuthController extends Controller
             return $this->throwException('Invalid role', 400);
         }
     }
-
     public function staffLogin(Request $request){
         //bale labas ng if else to
         $fields = $request->validate([
@@ -133,7 +126,6 @@ class AuthController extends Controller
                 'information' => $storeInfo,
                 'user' => $user,
                 'role' => $role,
-                'token' => $token,
             ];
         }
         else if ($role->slug == 'security-guard') {
@@ -143,11 +135,11 @@ class AuthController extends Controller
                 'information' => $guardInfo,
                 'user' => $user,
                 'role' => $role,
-                'token' => $token,
             ];
             Auth()->guard_information = $result;
 
-            return $result;
+            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+            return response($result, 201)->withCookie($cookie);
         }
         else if ($role->slug == 'guidance-staff') {
             $result = [

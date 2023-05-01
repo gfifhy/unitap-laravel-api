@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
+use App\Models\SchoolLocation;
 use App\Models\SecurityGuard;
 use App\Models\Store;
 use App\Models\Student;
 use App\Models\StudentGuardian;
+use App\Models\StudentViolation;
 use App\Models\User;
+use App\Models\Violation;
 use App\Models\Wallet;
 use App\Services\Utils\FileServiceInterface;
 use App\Traits\ExceptionTrait;
@@ -37,12 +40,12 @@ class ResourceController extends Controller
             'role' => 'required|string',
             'role_id' => 'required|string',
         ]);
+
         $middle_name = (isset($request['middle_name']) ? $request['middle_name'] : null );
         $role = Role::find($roleFields['role_id'])->where('id' , $roleFields['role_id'])->first();
         if(!$role){
             return $this->throwException('Invalid role', 401);
         }
-
 
         if(!in_array(explode(';',explode('/',explode(',', $request->user_image)[0])[1])[0], array('jpg','jpeg','png')) ) {
             $this->throwException('student_image has invalid file type', 422);
@@ -51,7 +54,7 @@ class ResourceController extends Controller
         if(!in_array(explode(';',explode('/',explode(',', $request->user_signature)[0])[1])[0], array('jpg','jpeg','png')) ) {
             $this->throwException('student_signature has invalid file type', 422);
         }
-        if($roleFields['role'] === 'admin'){
+        if($role->slug === 'admin'){
             $adminFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
@@ -80,7 +83,7 @@ class ResourceController extends Controller
             return response($user, 201);
 
         }
-        elseif($roleFields['role'] === 'store'){
+        else if($role->slug === 'store'){
             $storeFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
@@ -115,7 +118,7 @@ class ResourceController extends Controller
             return response($result, 201);
 
         }
-        elseif($roleFields['role'] === 'security-guard'){
+        elseif($role->slug === 'security-guard'){
             $guardFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
@@ -128,13 +131,14 @@ class ResourceController extends Controller
             $middle_name = (isset($request['middle_name']) ? $request['middle_name'] : null );
             $user = User::create([
                 'email' => $guardFields['email'],
-                'password' => $guardFields['password'],
+                'password' => bcrypt($guardFields['password']),
                 'nfc_id' => $guardFields['nfc_id'],
                 'first_name' => $guardFields['first_name'],
                 'middle_name' => $middle_name,
                 'last_name' => $guardFields['last_name'],
                 'role_id' => $roleFields['role_id'],
             ]);
+
             $guard = SecurityGuard::create([
                 'user_id' => $user->id,
                 'location_id' => '4b090ffc-41f8-498d-973a-5944f4fdeaad',
@@ -149,7 +153,7 @@ class ResourceController extends Controller
             return response($result, 201);
 
         }
-        elseif($roleFields['role'] === 'guidance-staff'){
+        elseif($role->slug === 'guidance-staff'){
             $guidanceFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
@@ -262,8 +266,27 @@ class ResourceController extends Controller
         return response($response, 201);
     }
 
+
+    public function getCountOfStudentPerLocation(){
+        $result = [];
+        $locations = SchoolLocation::all();
+
+        foreach ($locations as $location1) {
+            $result[$location1->location] = count(Student::where('location_id', $location1)->get());
+        }
+
+        return $result;
+    }
+
+    public function totalViolation() {
+        $result = [];
+        $violations = Violation::all();
+        foreach($violations as $violation) {
+            $result[$violation->violation_name] = count(StudentViolation::where('violation_id', $violation->id)->get());
+        }
+        return $result;
+    }
     public function test(Request $request) {
-        return $this->fileService->download('develop/develop/user_image/afd17502023a4b5905d8c03cce800bff','990d3feb-fd8e-4258-a5dd-7374f3ffefda');
         //return md5("123".Carbon::now()->timestamp);
         //return $this->filzeService->download('develop/develop/student_image/K11831245.jpg', '9904fa5b-53e6-425c-81dc-81dde0503e31');
     }

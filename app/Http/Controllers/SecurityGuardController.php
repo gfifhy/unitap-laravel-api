@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LocationHistory;
 use App\Models\SecurityGuard;
 use App\Models\Student;
 use App\Models\StudentViolation;
@@ -9,6 +10,7 @@ use App\Models\User;
 use App\Models\Violation;
 use App\Traits\ExceptionTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\Guard;
 
 class SecurityGuardController extends Controller
@@ -28,6 +30,11 @@ class SecurityGuardController extends Controller
         $guard = SecurityGuard::where('user_id', auth()->user()->id)->with('location')->first();
         $student->location_id = $guard->location_id;
         $student->save();
+
+        LocationHistory::create([
+            'location_id' => $guard->location_id,
+            'user_id' => $student->id,
+        ]);
         return response(['security-guard' => $guard, 'student' => $student], 200);
     }
 
@@ -52,7 +59,15 @@ class SecurityGuardController extends Controller
         ]);
 
         return $violation;
+    }
 
-
+    public function update(Request $request) {
+        $fields = $request->validate([
+            'location_id' => 'requited|string'
+        ]);
+        $securityGuard = SecurityGuard::where('user_id', Auth::user()->id)->first();
+        $securityGuard->location_id = $fields['location_id'];
+        $securityGuard->save();
+        return $securityGuard;
     }
 }
