@@ -21,7 +21,10 @@ class ProductController extends Controller
         $this->productImageFolderName = config('storage.base_path') . 'products';
     }
     public function index() {
-        $product = Product::whereNull('deleted_at')->where('user_id', auth()->user()->id)->get();
+        $products = Product::whereNull('deleted_at')->where('user_id', auth()->user()->id)->get();
+        foreach($products as $product){
+            $product->image = $this->fileService->download($product->image, $product->user_id);
+        }
         return $product;
     }
 
