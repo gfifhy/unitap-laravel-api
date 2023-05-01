@@ -102,7 +102,7 @@ class ResourceController extends Controller
 
             $user = User::create([
                 'email' => $storeFields['email'],
-                'password' => $storeFields['password'],
+                'password' => bcrypt($storeFields['password']),
                 'nfc_id' => $storeFields['nfc_id'],
                 'first_name' => $storeFields['first_name'],
                 'middle_name' => $middle_name,

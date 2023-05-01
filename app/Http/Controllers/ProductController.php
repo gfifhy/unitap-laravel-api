@@ -21,15 +21,15 @@ class ProductController extends Controller
         $this->productImageFolderName = config('storage.base_path') . 'products';
     }
     public function index() {
-        return Product::whereNull('deleted_at')->where('user_id', auth()->user()->id)->paginate(5);
+        $product = Product::whereNull('deleted_at')->where('user_id', auth()->user()->id)->get();
+        return $product;
     }
 
     public function store(Request $request)
     {
         $fields = $request->validate([
             'product_name' => 'required|string',
-            'user_id' => '',
-            'description' => '',
+            'description' => 'string',
             'image' => 'required|string',
             'stock' => 'required|string',
             'price' => 'required|string',
