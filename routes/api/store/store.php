@@ -11,6 +11,8 @@ Route::group(['middleware' => ['role:store']], function () {
     Route::get('/product/{id}', [ProductController::class, 'show'])->name('show.product');
     Route::delete('/product/{id}', [ProductController::class, 'destroy'])->name('delete.product');
     Route::post('/wallet-status', [ResourceController::class, 'walletStatus'])->name('toggle.wallet');
+    Route::get('/order', [ResourceController::class, 'orderIndex'])->name('all.orders');
+    Route::post('/complete-order/{id}', [ResourceController::class, 'completeOrder'])->name('completeOrder');
 });
 
 

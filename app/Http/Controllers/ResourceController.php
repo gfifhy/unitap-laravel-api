@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\Role;
 use App\Models\SchoolLocation;
 use App\Models\SecurityGuard;
@@ -325,5 +326,16 @@ class ResourceController extends Controller
     public function getViolationForStudent() {
         //990fdab1-553d-4fe0-8e49-5f4d35537d75
         return StudentViolation::where('status', 'violated')->where('violator_id', Auth::user()->id)->get();
+    }
+
+    public function orderIndex()
+    {
+        return Order::where('seller_id', Auth::user()->id)->where('status', 'processing')->get();
+    }
+    public function completeOrder($id){
+        $order = Order::where('seller_id', Auth::user()->id)->where('order_id', $id)->get();
+        $order->status = 'completed';
+        $order->save();
+        return response($order, 201);
     }
 }
