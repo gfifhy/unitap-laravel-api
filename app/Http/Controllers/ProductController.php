@@ -73,9 +73,7 @@ class ProductController extends Controller
         $product->stock = $fields['stock'];
         $product->price = $fields['price'];
         $product->save();
-
         return response($product, 201);
-
     }
 
     /**
