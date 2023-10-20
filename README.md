@@ -21,3 +21,8 @@ php artisan db:seed
 ~~~
 php artisan serve
 ~~~
+
+###Routes
+~~~
+php artisan route:list
+~~~
