@@ -22,7 +22,7 @@ php artisan db:seed
 php artisan serve
 ~~~
 
-###Routes
+### Routes
 ~~~
 php artisan route:list
 ~~~
