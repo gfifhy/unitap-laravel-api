@@ -52,7 +52,7 @@ class AuthController extends Controller
         //role details
         $role = Role::find($user->role_id);
         //create token
-        $token = $user->createToken('token', Carbon::now()->addDays(3))->plainTextToken;
+        $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
         $wallet = Wallet::where('user_id', $user->id)->first();
         $result = [
             'user' => $student,
@@ -84,7 +84,7 @@ class AuthController extends Controller
             return $this->throwException('Wrong Password!', 400);
         }
         $role = Role::find($user->role_id);
-        $token = $user->createToken('token', Carbon::now()->addDays(3))->plainTextToken;
+        $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
         if($role->slug == 'admin') {
             $result = [
                 'user' => $user,
@@ -118,7 +118,7 @@ class AuthController extends Controller
             return $this->throwException('Wrong Password!', 400);
         }
         $role = Role::find($user->role_id);
-        $token = $user->createToken('token', Carbon::now()->addDays(3))->plainTextToken;
+        $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
 
         if($role->slug == 'store') {
             $storeInfo = Store::where('user_id', $user->id)->first();
