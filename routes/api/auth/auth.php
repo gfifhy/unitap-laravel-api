@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -15,6 +16,6 @@ Route::group(['middleware' => ['throttle:loginThrottle']], function(){
 Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/profile', [AuthController::class, 'profile'])->name('auth.profile');
+    Route::get('/asset/{image}', [ResourceController::class, 'download'])->name('image.download')->where('image', '.*');
 
 });
-Route::get('test', [\App\Http\Controllers\ResourceController::class, 'test'])->name('auth.test');

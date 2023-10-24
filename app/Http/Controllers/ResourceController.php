@@ -18,9 +18,7 @@ use App\Traits\ExceptionTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class ResourceController extends Controller
 {
@@ -202,14 +200,6 @@ class ResourceController extends Controller
 
     }
     public function addStudent(Request $request){
-
-        if(!in_array(explode(';',explode('/',explode(',', $request->student_image)[0])[1])[0], array('jpg','jpeg','png')) ) {
-            $this->throwException('student_image has invalid file type', 422);
-        }
-
-        if(!in_array(explode(';',explode('/',explode(',', $request->student_signature)[0])[1])[0], array('jpg','jpeg','png')) ) {
-            $this->throwException('student_signature has invalid file type', 422);
-        }
         $fields = $request->validate([
             'nfc_id' => 'required|string',
             'first_name' => 'required|string',
@@ -222,28 +212,28 @@ class ResourceController extends Controller
             'contact' => 'required|string',
             'password' => 'required|string|confirmed|min:8',
             'guardian_first_name' => 'required|string',
-            'guardian_middle_name' => 'required|string',
             'guardian_last_name' => 'required|string',
             'guardian_contact' => 'required|string',
-            'student_image' => 'required|string',
-            'student_signature' => 'required|string',
+            'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
+            'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
         ]);
-
-
-
         $role = Role::where('slug', $fields['role'])->where('id', $fields['role_id'])->first();
         if(!$role){
             return $this->throwException('Invalid Role', 400);
         }
+
         $user = User::create([
             'role_id' => $role->id,
             'nfc_id' => $fields['nfc_id'],
             'email' => $fields['email'],
             'password' => bcrypt($fields['password']),
             'first_name' => $fields['first_name'],
-            'middle_name' => $fields['middle_name'],
             'last_name' => $fields['last_name'],
         ]);
+        if(isset($request['middle_name'])){
+            $user->middle_name = $request['middle_name'];
+            $user->save();
+        }
 
         $wallet = Wallet::create([
             'user_id' => $user->id,
@@ -254,9 +244,14 @@ class ResourceController extends Controller
         $guardian = StudentGuardian::Create([
             'first_name' => $fields['guardian_first_name'],
             'last_name' => $fields['guardian_last_name'],
-            'middle_name' => $fields['guardian_last_name'],
             'contact' => $fields['guardian_contact'],
         ]);
+
+        if(isset($request['guardian_middle_name'])){
+            $guardian->middle_name = $request['guardian_middle_name'];
+            $guardian->save();
+        }
+
         $student = Student::create([
             'user_id' => $user->id,
             'student_id' => $fields['student_id'],
@@ -267,10 +262,13 @@ class ResourceController extends Controller
 
 
 
-        //take image
-        $filename = md5($user->id.Carbon::now()->timestamp);
-        $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $request->student_image, $user->id);
-        $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename, $request->student_signature, $user->id);
+        $filename = hash('sha256', $user->id.Carbon::now()->timestamp);
+        if($request->hasFile('user_image')){
+            $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename.'.'.$request->file('user_image')->extension(), $fields['user_image'], $user->id);
+        }
+        if($request->hasFile('user_signature')){
+            $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename.'.'.$request->file('user_signature')->extension(), $fields['user_signature'], $user->id);
+        }
         $user->save();
         $response =[
             'user' => $user,
@@ -337,5 +335,9 @@ class ResourceController extends Controller
         $order->status = 'completed';
         $order->save();
         return response($order, 201);
+    }
+
+    public function download($image){
+        return response($this->fileService->download($image, Auth::user()->id), 200);
     }
 }

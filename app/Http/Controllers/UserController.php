@@ -7,11 +7,19 @@ use App\Models\Role;
 use App\Models\StudentGuardian;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Services\Utils\FileServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    private $fileService;
+
+    public function __construct(FileServiceInterface $fileService)
+    {
+        $this->fileService = $fileService;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -19,7 +27,13 @@ class UserController extends Controller
      */
     public function index()
     {
-        return User::whereNull('deleted_at')->orderBy('role_id')->paginate(15);
+        $users = User::whereNull('deleted_at')->orderBy('role_id')->paginate(15);
+        $users->data = $users->map(function ($user) {
+            $user->user_image = $this->fileService->download($user->user_image, $user->id);
+            $user->user_signature = $this->fileService->download($user->user_signature, $user->id);
+            return $user;
+        });
+        return $users;
     }
 
     /**
@@ -41,7 +55,10 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        return User::where('id', $id)->first();
+        $user = User::where('id', $id)->first();
+        $user->user_image = $this->fileService->download($user->user_image, $user->id);
+        $user->user_signature = $this->fileService->download($user->user_signature, $user->id);
+        return $user;
     }
 
     /**
@@ -53,12 +70,7 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $array = json_decode($request, true);
-        return $array;
-// Loop through the array using foreach
-        foreach ($array as $key => $value) {
-            echo $key . ': ' . $value . '<br>';
-        }
+        $flight = User::find($id);
 
     }
 
