@@ -5,6 +5,7 @@ namespace App\Services\Utils;
 use App\Services\Utils\FileServiceInterface;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use function PHPUnit\Framework\isEmpty;
 
 class FileService implements FileServiceInterface
 {
@@ -15,10 +16,17 @@ class FileService implements FileServiceInterface
 
     public function download($path, $encryptionKey)
     {
-        $encryptedFileContents = Storage::disk('local')->get($path);
-        $ext = pathinfo($path, PATHINFO_EXTENSION);
+
+        if(isset($path)){
+            $encryptedFileContents = Storage::disk('local')->get($path);
+            $ext = pathinfo($path, PATHINFO_EXTENSION);
+            $decryptedFileContents = Crypt::decrypt($encryptedFileContents, $encryptionKey);
+        }
+        else {
+            $decryptedFileContents = Storage::disk('local')->get('develop/develop/user_image/user.png');
+            $ext = "png";
+        }
         // Decrypt the file contents
-        $decryptedFileContents = Crypt::decrypt($encryptedFileContents, $encryptionKey);
         $result = "data:image/".$ext.";base64,".base64_encode($decryptedFileContents);
         return $result;
     }
