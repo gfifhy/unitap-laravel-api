@@ -2,6 +2,7 @@
 /public/build
 /public/hot
 /public/storage
+/storage/*.key
 /vendor
 .env
 .env.backup
@@ -15,4 +16,3 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-!/storage/app/develop/develop/user_image/user.png

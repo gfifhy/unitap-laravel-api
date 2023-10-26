@@ -1,4 +1,4 @@
 *
 !public/
 !.gitignore
-app/develop/develop/user_image/user.png
+!app/develop/develop/user_image/user.png
