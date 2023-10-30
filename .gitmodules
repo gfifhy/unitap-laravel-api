@@ -1,0 +1,4 @@
+[submodule "pkg/webauthn"]
+	path = pkg/webauthn
+	url = https://github.com/qtwf/proxyma-auth.git
+	branch = pkg/webauthn

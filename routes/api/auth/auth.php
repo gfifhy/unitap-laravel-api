@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\WebAuthn\WebAuthnLoginController;
+use App\Http\Controllers\WebAuthn\WebAuthnRegisterController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 
 //rate limit
 Route::group(['middleware' => ['throttle:loginThrottle']], function(){
@@ -19,3 +21,16 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('/asset/{image}', [ResourceController::class, 'download'])->name('image.download')->where('image', '.*');
 
 });
+
+Route::prefix('webauth')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        Route::get('/register/options', [WebAuthnRegisterController::class, 'options'])->name('webauthn.register.options');
+        Route::post('/register', [WebAuthnRegisterController::class, 'register'])->name('webauthn.register');
+    });
+
+Route::prefix('webauth')
+    ->group(function () {
+        Route::get('/login/options', [WebAuthnLoginController::class, 'options'])->name('webauthn.login.options');
+        Route::post('/login', [WebAuthnLoginController::class, 'login'])->name('webauthn.login');
+    });
