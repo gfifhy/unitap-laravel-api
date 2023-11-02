@@ -191,8 +191,6 @@ class AuthController extends Controller
         auth()->user()->tokens()->delete();
      
         $request->session()->invalidate();
-     
-        $request->session()->regenerateToken();
 
         return [
             'message' => 'Logout'
