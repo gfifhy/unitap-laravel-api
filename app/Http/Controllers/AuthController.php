@@ -45,7 +45,7 @@ class AuthController extends Controller
         }
         $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
         $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'Lax');
-        return response(['user' => $user], 200)->withCookie($cookie);
+        return response($user, 200)->withCookie($cookie);
     }
 
     public function studentLogin(Request $request){

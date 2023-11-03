@@ -33,11 +33,10 @@ class WebAuthnLoginController
      */
     public function login(AssertedRequest $request): Response
     {
-        $res = $request->login();
-        $user = User::where('id', $res->id)->first();
+        $user = $request->login();
         $role = Role::find($user->role_id);
         $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
         $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
-        return response()->noContent($res ? 204 : 422)->withCookie($cookie);
+        return response($user, 200)->withCookie($cookie);
     }
 }
