@@ -19,7 +19,8 @@ class RoleChecker
             }
         }
         //echo auth()->user()->role->slug;
-        $this->throwException('Unauthorized Access', '401' );
+        //$this->throwException('Unauthorized Access', '401' );
+        return response(['message' => 'Unauthorized access'], 401);
     }
 
 }

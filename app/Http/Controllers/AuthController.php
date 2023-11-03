@@ -27,6 +27,27 @@ class AuthController extends Controller
     {
         $this->fileService = $fileService;
     }
+
+    public function login(Request $request){
+        $fields = $request->validate([
+            'email' => 'required|string',
+            'password' => 'required|string'
+        ]);
+        $user = User::where('email', $fields['email'])->with('role')->first();
+
+        if(!$user){
+            //return response('Student id number does not exist', '400');
+            return  $this->throwException('Email does not exist', '400');
+        }
+        //check if password is correct
+        if(!Hash::check($fields['password'], $user->password)){
+            return  $this->throwException('Wrong password', '400');
+        }
+        $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
+        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'Lax');
+        return response(['user' => $user], 200)->withCookie($cookie);
+    }
+
     public function studentLogin(Request $request){
         $fields = $request->validate([
             'student_id' => 'required|string',
