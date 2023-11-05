@@ -31,6 +31,7 @@ class UserController extends Controller
         $users->data = $users->map(function ($user) {
             $user->user_image = $this->fileService->download($user->user_image, $user->id);
             $user->user_signature = $this->fileService->download($user->user_signature, $user->id);
+            $user->role = Role::find($user->role_id)->name;
             return $user;
         });
         return $users;

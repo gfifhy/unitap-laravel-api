@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\WebAuthn;
 
-use App\Models\Role;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Response;
@@ -34,9 +32,9 @@ class WebAuthnLoginController
     public function login(AssertedRequest $request): Response
     {
         $user = $request->login();
-        $role = Role::find($user->role_id);
         $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
         $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+        $user->role = Auth::user()->role;
         return response($user, 200)->withCookie($cookie);
     }
 }
