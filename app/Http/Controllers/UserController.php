@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Role;
+use App\Models\SecurityGuard;
+use App\Models\Student;
 use App\Models\StudentGuardian;
 use App\Models\User;
 use App\Models\Wallet;
@@ -71,8 +73,24 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $flight = User::find($id);
-
+        foreach ($request->input() as $req){
+            if($req == null){
+                return response(['message'=>'request must not be null'], 422);
+            }
+        }
+        $user = User::where('id', $id)->with('role')->first();
+        $user->update($request->all());
+        if($user->role->slug === 'student'){
+            $user['student'] = Student::where('user_id', $user->id)->first();
+            $user['student']->update($request->only(['contact_number', 'student_id', 'location_id']));
+            $user['student']['wallet'] = Wallet::where('user_id', $user->id)->first();
+            $user['student']['wallet']->update($request->only(['balance', 'isDisabled']));
+        }
+        else if($user->role->slug === 'security-guard'){
+            $user['guard'] = SecurityGuard::where('user_id', $user->id)->first();
+            $user['guard']->update($request->only(['location_id']));
+        }
+        return $user;
     }
 
     /**
