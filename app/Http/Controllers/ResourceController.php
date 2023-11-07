@@ -199,58 +199,55 @@ class ResourceController extends Controller
 
 
     }
-    public function addStudent(Request $request){
+
+    public function addStudent(Request $request)
+    {
         $fields = $request->validate([
-            'nfc_id' => 'required|string',
+            //'nfc_id' => 'required|string',
             'first_name' => 'required|string',
             'middle_name' => 'string',
             'last_name' => 'required|string',
             'student_id' => 'required|string|unique:students,student_id',
             'email' => 'required|string|unique:users,email',
-            'role_id' => 'required|string',
-            'role' => 'required|string',
+            'role' => 'required|array',
             'contact' => 'required|string',
             'password' => 'required|string|confirmed|min:8',
             'guardian_first_name' => 'required|string',
+            'guardian_middle_name' => 'string',
             'guardian_last_name' => 'required|string',
             'guardian_contact' => 'required|string',
-            'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
-            'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
+            //'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
+            //'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
         ]);
-        $role = Role::where('slug', $fields['role'])->where('id', $fields['role_id'])->first();
-        if(!$role){
+
+        $role = Role::where('slug', $fields['role']['slug'])->first();
+
+        if (!$role) {
             return $this->throwException('Invalid Role', 400);
         }
 
         $user = User::create([
             'role_id' => $role->id,
-            'nfc_id' => $fields['nfc_id'],
+            //'nfc_id' => $fields['nfc_id'],
             'email' => $fields['email'],
             'password' => bcrypt($fields['password']),
             'first_name' => $fields['first_name'],
             'last_name' => $fields['last_name'],
+            'middle_name' => $fields['middle_name'] ?? '',
         ]);
-        if(isset($request['middle_name'])){
-            $user->middle_name = $request['middle_name'];
-            $user->save();
-        }
 
         $wallet = Wallet::create([
             'user_id' => $user->id,
             'balance' => 0,
-            'isDisabled' => 0
+            'isDisabled' => 0,
         ]);
 
         $guardian = StudentGuardian::Create([
             'first_name' => $fields['guardian_first_name'],
             'last_name' => $fields['guardian_last_name'],
             'contact' => $fields['guardian_contact'],
+            'middle_name' => $fields['guardian_middle_name'] ?? '',
         ]);
-
-        if(isset($request['guardian_middle_name'])){
-            $guardian->middle_name = $request['guardian_middle_name'];
-            $guardian->save();
-        }
 
         $student = Student::create([
             'user_id' => $user->id,
@@ -259,26 +256,33 @@ class ResourceController extends Controller
             'contact_number' => $fields['contact'],
             'guardian_id' => $guardian->id,
         ]);
+/*
+        $filename = hash('sha256', $user->id . Carbon::now()->timestamp);
 
-
-
-        $filename = hash('sha256', $user->id.Carbon::now()->timestamp);
-        if($request->hasFile('user_image')){
-            $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename.'.'.$request->file('user_image')->extension(), $fields['user_image'], $user->id);
+        if ($request->hasFile('user_image')) {
+            $user->user_image = $this->uploadFile($user, $request->file('user_image'), $filename, $this->studentImageFolderName);
         }
-        if($request->hasFile('user_signature')){
-            $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename.'.'.$request->file('user_signature')->extension(), $fields['user_signature'], $user->id);
+
+        if ($request->hasFile('user_signature')) {
+            $user->user_signature = $this->uploadFile($user, $request->file('user_signature'), $filename, $this->studentSignatureFolderName);
         }
+*/
         $user->save();
-        $response =[
+
+        $response = [
             'user' => $user,
             'guardian' => $guardian,
             'student' => $student,
             'wallet' => $wallet,
         ];
+
         return response($response, 201);
     }
 
+    private function uploadFile($user, $file, $filename, $folderName)
+    {
+        return $this->fileService->upload($folderName, $filename . '.' . $file->extension(), $file, $user->id);
+    }
 
     public function getCountOfStudentPerLocation(){
         $result = [];

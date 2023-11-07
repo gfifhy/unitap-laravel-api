@@ -43,7 +43,6 @@ class AuthController extends Controller
         if(!Hash::check($fields['password'], $user->password)){
             return  $this->throwException('Wrong password', '400');
         }
-        $user->role = Auth::user()->role;
         $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
         $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'Lax');
         return response($user, 200)->withCookie($cookie);

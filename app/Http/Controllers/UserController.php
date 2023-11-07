@@ -33,7 +33,7 @@ class UserController extends Controller
         $users->data = $users->map(function ($user) {
             $user->user_image = $this->fileService->download($user->user_image, $user->id);
             $user->user_signature = $this->fileService->download($user->user_signature, $user->id);
-            $user->role = Role::find($user->role_id)->name;
+            $user->role = Role::find($user->role_id);
             return $user;
         });
         return $users;
@@ -103,21 +103,16 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        $user =  User::find($id);
-        $user->deleted_at = Carbon::now();
-        $user->save();
+        $user = User::find($id);
+        if ($user) {
+            $user->delete();
+        }
         if(Role::find($user->role_id)->slug === "student"){
-            $wallet = Wallet::where('user_id', $user->id);
-            $wallet->deleted_at = Carbon::now();
-            $wallet->save();
-            $studentGuardian = StudentGuardian::where('user_id', $user->id);
-            $studentGuardian->deleted_at = Carbon::now();
-            $studentGuardian->save();
+            Wallet::where('user_id', $user->id)->update(['deleted_at' => now()]);
+            StudentGuardian::where('id', Student::where('user_id', $user->id)->first()->guardian_id)->update(['deleted_at' => now()]);
         }
         if(Role::find($user->role_id)->slug === "store"){
-            $wallet = Wallet::where('user_id', $user->id);
-            $wallet->deleted_at = Carbon::now();
-            $wallet->save();
+            Wallet::where('user_id', $user->id)->update(['deleted_at' => now()]);
             $product = Product::where('user_id', $user->id)->get();
             for($i=0; $i<count($product); $i++) {
                 $product[$i]->deleted_at = Carbon::now();

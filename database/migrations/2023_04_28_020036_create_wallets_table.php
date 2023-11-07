@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('balance');
             $table->boolean('isDisabled');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
