@@ -33,7 +33,7 @@ class AuthController extends Controller
             'email' => 'required|string',
             'password' => 'required|string'
         ]);
-        $user = User::where('email', $fields['email'])->with('role')->first();
+        $user = User::where('email', $fields['email'])->first();
 
         if(!$user){
             //return response('Student id number does not exist', '400');
@@ -45,7 +45,7 @@ class AuthController extends Controller
         }
         $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
         $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'Lax');
-        return response($user, 200)->withCookie($cookie);
+        return response($this->getUserProfileData($user), 200)->withCookie($cookie);
     }
 
     public function studentLogin(Request $request){
@@ -178,36 +178,36 @@ class AuthController extends Controller
     }
     public function profile(Request $request){
         //auth()->user()->role;
+        return response($this->getUserProfileData(Auth::user()), 201);
+    }
+    private function getUserProfileData($user) {
         $user_data = array();
-        $user_info = User::where('id', Auth::user()->id)->first();
-        $user_info->user_image = $this->fileService->download($user_info->user_image, Auth::user()->id);
-        $user_info->user_signature = $this->fileService->download($user_info->user_signature, Auth::user()->id);
-        if(Auth::user()->role->slug == 'student'){
-            $user_data['student'] = Student::where('user_id', Auth::user()->id)->first();
-            $user_data['wallet'] = Wallet::where('user_id', Auth::user()->id)->first();
-            $user_data['transactions']['sent'] = Transaction::where('wallet_id_sender', Auth::user()->id)->first();
-            $user_data['transactions']['received'] = Transaction::where('wallet_id_receiver', Auth::user()->id)->first();
-            $user_data['violations'] = StudentViolation::where('violator_id', Auth::user()->id)->first();
+        $user_info = User::where('id', $user->id)->with('role')->first();
+        $user_info->user_image = $this->fileService->download($user_info->user_image, $user->id);
+        $user_info->user_signature = $this->fileService->download($user_info->user_signature, $user->id);
+        if($user_info->role->slug == 'student'){
+            $user_data['student'] = Student::where('user_id', $user->id)->first();
+            $user_data['wallet'] = Wallet::where('user_id', $user->id)->first();
+            $user_data['transactions']['sent'] = Transaction::where('wallet_id_sender', $user->id)->first();
+            $user_data['transactions']['received'] = Transaction::where('wallet_id_receiver', $user->id)->first();
+            $user_data['violations'] = StudentViolation::where('violator_id', $user->id)->first();
         }
-        else if(Auth::user()->role->slug == 'store'){
-            $user_data['store'] = Store::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();$user_data['wallet'] = Wallet::where('user_id', Auth::user()->id)->first();
-            $user_data['transactions']['sent'] = Transaction::where('wallet_id_sender', Auth::user()->id)->first();
-            $user_data['transactions']['received'] = Transaction::where('wallet_id_receiver', Auth::user()->id)->first();
+        else if($user_info->role->slug == 'store'){
+            $user_data['store'] = Store::where('user_id', $user->id)->whereNull('deleted_at')->first();$user_data['wallet'] = Wallet::where('user_id', $user->id)->first();
+            $user_data['transactions']['sent'] = Transaction::where('wallet_id_sender', $user->id)->first();
+            $user_data['transactions']['received'] = Transaction::where('wallet_id_receiver', $user->id)->first();
         }
-        else if(Auth::user()->role->slug == 'security-guard'){
-            $user_data = SecurityGuard::where('user_id', Auth::user()->id)->whereNull('deleted_at')->first();
+        else if($user_info->role->slug == 'security-guard'){
+            $user_data = SecurityGuard::where('user_id', $user->id)->whereNull('deleted_at')->first();
         }
         else {
             $user_data = "";
         }
 
-        $user_info->role = Auth::user()->role;
-
-        $result = [
+        return [
             'user_data' => $user_data,
             'user' => $user_info,
         ];
-        return response($result, 201);
     }
     public function logout(Request $request){
 
