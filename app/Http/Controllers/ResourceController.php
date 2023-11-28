@@ -37,23 +37,14 @@ class ResourceController extends Controller
     }
     public function addStaff(Request $request){
         $roleFields = $request->validate([
-            'role' => 'required|string',
-            'role_id' => 'required|string',
+            'role' => 'required|json'
         ]);
-
         $middle_name = (isset($request['middle_name']) ? $request['middle_name'] : null );
-        $role = Role::find($roleFields['role_id'])->where('id' , $roleFields['role_id'])->first();
+        $role = Role::where('slug' , json_decode($roleFields['role'], true)['slug'])->first();
         if(!$role){
             return $this->throwException('Invalid role', 401);
         }
 
-        if(!in_array(explode(';',explode('/',explode(',', $request->user_image)[0])[1])[0], array('jpg','jpeg','png')) ) {
-            $this->throwException('student_image has invalid file type', 422);
-        }
-
-        if(!in_array(explode(';',explode('/',explode(',', $request->user_signature)[0])[1])[0], array('jpg','jpeg','png')) ) {
-            $this->throwException('student_signature has invalid file type', 422);
-        }
         if($role->slug === 'admin'){
             $adminFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
@@ -61,8 +52,8 @@ class ResourceController extends Controller
                 'nfc_id' => 'string',
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
-                'user_image' => 'required|string',
-                'user_signature' => 'required|string',
+                'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
+                'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
             ]);
             $user = User::create([
                 'email' => $adminFields['email'],
@@ -71,13 +62,18 @@ class ResourceController extends Controller
                 'first_name' => $adminFields['first_name'],
                 'middle_name' => $middle_name,
                 'last_name' => $adminFields['last_name'],
-                'role_id' => $roleFields['role_id'],
+                'role_id' => $role->id,
             ]);
 
-            //take image
-            $filename = md5($user->id.Carbon::now()->timestamp);
-            $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $request->user_image, $user->id);
-            $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename, $request->user_signature, $user->id);
+            $filename = hash('sha256', $user->id . Carbon::now()->timestamp);
+
+            if ($request->hasFile('user_image')) {
+                $user->user_image = $this->uploadFile($user, $request->file('user_image'), $filename, $this->studentImageFolderName);
+            }
+
+            if ($request->hasFile('user_signature')) {
+                $user->user_signature = $this->uploadFile($user, $request->file('user_signature'), $filename, $this->studentSignatureFolderName);
+            }
             $user->save();
 
             return response($user, 201);
@@ -85,9 +81,6 @@ class ResourceController extends Controller
         }
         else if($role->slug === 'store'){
 
-            if(!in_array(explode(';',explode('/',explode(',', $request->store_logo)[0])[1])[0], array('jpg','jpeg','png')) ) {
-                $this->throwException('store logo has invalid file type', 422);
-            }
             $storeFields = $request->validate([
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|string|min:8',
@@ -95,8 +88,8 @@ class ResourceController extends Controller
                 'store_name' => 'required|string',
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
-                'user_image' => 'required|string',
-                'user_signature' => 'required|string',
+                'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
+                'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
             ]);
 
             $user = User::create([
@@ -106,7 +99,7 @@ class ResourceController extends Controller
                 'first_name' => $storeFields['first_name'],
                 'middle_name' => $middle_name,
                 'last_name' => $storeFields['last_name'],
-                'role_id' => $roleFields['role_id'],
+                'role_id' => $role->id,
             ]);
             $store = Store::create([
                 'user_id' => $user->id,
@@ -121,12 +114,21 @@ class ResourceController extends Controller
             ]);
             //image
             $filename = $storeFields['store_name']."_".md5($user->id.Carbon::now()->timestamp);
-            $store->store_logo = $this->fileService->upload("develop/store_logo", $filename, $request->store_logo, $user->id);
+            if ($request->hasFile('store_logo')) {
+                $store->store_logo = $this->uploadFile($user, $request->file('store_logo'), $filename, "develop/store_logo");
+            }
             $store->save();
-            //take image
-            $filename = md5($user->id.Carbon::now()->timestamp);
-            $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $request->user_image, $user->id);
-            $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename, $request->user_signature, $user->id);
+
+            $filename = hash('sha256', $user->id . Carbon::now()->timestamp);
+
+            if ($request->hasFile('user_image')) {
+                $user->user_image = $this->uploadFile($user, $request->file('user_image'), $filename, $this->studentImageFolderName);
+            }
+
+            if ($request->hasFile('user_signature')) {
+                $user->user_signature = $this->uploadFile($user, $request->file('user_signature'), $filename, $this->studentSignatureFolderName);
+            }
+
             $user->save();
             return response($result, 201);
 
@@ -138,8 +140,8 @@ class ResourceController extends Controller
                 'nfc_id' => 'string',
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
-                'user_image' => 'required|string',
-                'user_signature' => 'required|string',
+                'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
+                'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
             ]);
             $middle_name = (isset($request['middle_name']) ? $request['middle_name'] : null );
             $user = User::create([
@@ -149,7 +151,7 @@ class ResourceController extends Controller
                 'first_name' => $guardFields['first_name'],
                 'middle_name' => $middle_name,
                 'last_name' => $guardFields['last_name'],
-                'role_id' => $roleFields['role_id'],
+                'role_id' => $role->id,
             ]);
 
             $guard = SecurityGuard::create([
@@ -158,10 +160,15 @@ class ResourceController extends Controller
             ]);
             $result = ['user' => $user, 'security_guard' => $guard];
 
-            //take image
-            $filename = md5($user->id.Carbon::now()->timestamp);
-            $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $request->user_image, $user->id);
-            $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename, $request->user_signature, $user->id);
+            $filename = hash('sha256', $user->id . Carbon::now()->timestamp);
+
+            if ($request->hasFile('user_image')) {
+                $user->user_image = $this->uploadFile($user, $request->file('user_image'), $filename, $this->studentImageFolderName);
+            }
+
+            if ($request->hasFile('user_signature')) {
+                $user->user_signature = $this->uploadFile($user, $request->file('user_signature'), $filename, $this->studentSignatureFolderName);
+            }
             $user->save();
             return response($result, 201);
 
@@ -173,8 +180,8 @@ class ResourceController extends Controller
                 'nfc_id' => 'required|string',
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
-                'user_image' => 'required|string',
-                'user_signature' => 'required|string',
+                'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
+                'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
         ]);
             $user = User::create([
                 'email' => $guidanceFields['email'],
@@ -183,13 +190,18 @@ class ResourceController extends Controller
                 'first_name' => $guidanceFields['first_name'],
                 'middle_name' => $middle_name,
                 'last_name' => $guidanceFields['last_name'],
-                'role_id' => $roleFields['role_id'],
+                'role_id' => $role->id,
             ]);
 
-            //take image
-            $filename = md5($user->id.Carbon::now()->timestamp);
-            $user->user_image = $this->fileService->upload($this->studentImageFolderName, $filename, $request->user_image, $user->id);
-            $user->user_signature = $this->fileService->upload($this->studentSignatureFolderName, $filename, $request->user_signature, $user->id);
+            $filename = hash('sha256', $user->id . Carbon::now()->timestamp);
+
+            if ($request->hasFile('user_image')) {
+                $user->user_image = $this->uploadFile($user, $request->file('user_image'), $filename, $this->studentImageFolderName);
+            }
+
+            if ($request->hasFile('user_signature')) {
+                $user->user_signature = $this->uploadFile($user, $request->file('user_signature'), $filename, $this->studentSignatureFolderName);
+            }
             $user->save();
             return response($user, 201);
         }
@@ -203,24 +215,24 @@ class ResourceController extends Controller
     public function addStudent(Request $request)
     {
         $fields = $request->validate([
-            //'nfc_id' => 'required|string',
+            'nfc_id' => 'required|string',
             'first_name' => 'required|string',
             'middle_name' => 'string',
             'last_name' => 'required|string',
             'student_id' => 'required|string|unique:students,student_id',
             'email' => 'required|string|unique:users,email',
-            'role' => 'required|array',
+            'role' => 'required|json',
             'contact' => 'required|string',
             'password' => 'required|string|confirmed|min:8',
             'guardian_first_name' => 'required|string',
             'guardian_middle_name' => 'string',
             'guardian_last_name' => 'required|string',
             'guardian_contact' => 'required|string',
-            //'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
-            //'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
+            'user_image' => 'required|max:20480|mimes:png,jpeg,jpg',
+            'user_signature' => 'required|max:20480|mimes:png,jpeg,jpg',
         ]);
 
-        $role = Role::where('slug', $fields['role']['slug'])->first();
+        $role = Role::where('slug', json_decode($fields['role'], true)['slug'])->first();
 
         if (!$role) {
             return $this->throwException('Invalid Role', 400);
@@ -228,7 +240,7 @@ class ResourceController extends Controller
 
         $user = User::create([
             'role_id' => $role->id,
-            //'nfc_id' => $fields['nfc_id'],
+            'nfc_id' => $fields['nfc_id'],
             'email' => $fields['email'],
             'password' => bcrypt($fields['password']),
             'first_name' => $fields['first_name'],
@@ -256,7 +268,7 @@ class ResourceController extends Controller
             'contact_number' => $fields['contact'],
             'guardian_id' => $guardian->id,
         ]);
-/*
+
         $filename = hash('sha256', $user->id . Carbon::now()->timestamp);
 
         if ($request->hasFile('user_image')) {
@@ -266,7 +278,7 @@ class ResourceController extends Controller
         if ($request->hasFile('user_signature')) {
             $user->user_signature = $this->uploadFile($user, $request->file('user_signature'), $filename, $this->studentSignatureFolderName);
         }
-*/
+
         $user->save();
 
         $response = [
