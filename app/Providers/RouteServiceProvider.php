@@ -60,6 +60,9 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api/guidance')
                 ->group(base_path('routes/api/guidance/guidance.php'));
 
+            Route::prefix('api/landing')
+                ->group(base_path('routes/api/landing.php'));
+
         });
     }
 

@@ -30,5 +30,6 @@ class DatabaseSeeder extends Seeder
         $this->call(ViolationsTableSeeder::class);
         $this->call(WalletsTableSeeder::class);
         $this->call(SchoolLocationsTableSeeder::class);
+        $this->call(LandingPageSeeder::class);
     }
 }
