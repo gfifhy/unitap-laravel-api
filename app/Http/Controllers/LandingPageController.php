@@ -62,8 +62,10 @@ class LandingPageController extends Controller
                 );
 
             } elseif ($existingRecord) {
-                $img_pth = $this->trimStoragePrefix(json_decode(
-                    $existingRecord['value'], true)['imgurl']);
+                $record = json_decode($existingRecord['value'], true);
+                $img_pth = isset($record['imgurl']) ?
+                    $this->trimStoragePrefix($record['imgurl']) :
+                    '';
             }
 
             $data['value']['imgurl'] = Storage::url($img_pth);
