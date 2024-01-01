@@ -23,6 +23,7 @@ class LandingPageSeeder extends Seeder
                 'type' => 'upperLanding',
                 'value' => json_encode([
                     'imgurl' => '/storage/658ab800e09d6_Kona164630.png',
+                    'cover_mode' => 'tiled',
                     'title' => 'UniTap',
                     'subtitle' => 'Transaction United',
                     'description' => 'Centralized, seamless and secure commerce payment system.',

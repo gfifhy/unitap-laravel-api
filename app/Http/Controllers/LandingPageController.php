@@ -9,9 +9,14 @@ use Illuminate\Support\Facades\Validator;
 
 class LandingPageController extends Controller
 {
-    public function index()
+    public function _all()
     {
         return CMSLanding::all();
+    }
+
+    public function index()
+    {
+        return CMSLanding::where('is_disabled', 0)->get();
     }
 
     public function store(Request $req)
