@@ -25,11 +25,16 @@ class StudentController extends Controller
     public function storeProduct($storeId) {
         $store = Store::where('id', $storeId)->first();
         $user = User::where('id', $store->user_id)->first();
-        $products =  Product::whereNull('deleted_at')->where('user_id', $user->id)->get();
+        $products = [];
+        if ($user) {
+            $products =  Product::whereNull('deleted_at')->where('user_id', $user->id)->get();
+        } else {
+            return response([], 200);
+        }
         foreach($products as $product){
             $product->image = $this->fileService->download($product->image, $product->user_id);;
         }
-        return response($products, 201);
+        return response($products, 200);
     }
     public function indexStore() {
         $wallet = Wallet::where('user_id', Auth::user()->id)->first();
