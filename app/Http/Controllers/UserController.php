@@ -38,6 +38,22 @@ class UserController extends Controller
         });
         return $users;
     }
+    
+    public function guard_index()
+    {
+
+        $users = User::whereNull('deleted_at')
+            ->where('role_id', Role::where('slug', 'student')->first()->id)
+            ->orderBy('role_id')->paginate(50);
+        $users->data = $users->map(function ($user) {
+            $user->user_image = null;
+            $user->user_signature = null;
+            $user->role = [ 'name' => 'Student'];
+            $user->email = '****';
+            return $user;
+        });
+        return $users;
+    }
 
     /**
      * Store a newly created resource in storage.

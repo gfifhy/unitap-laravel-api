@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\NotificationService;
 use App\Services\Utils\FileServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,10 +15,15 @@ class NotificationController extends Controller
 {
 
     private $fileService;
+    protected $notificationService;
 
-    public function __construct(FileServiceInterface $fileService)
+    public function __construct(
+        FileServiceInterface $fileService,
+        NotificationService $notificationService
+    )
     {
         $this->fileService = $fileService;
+        $this->notificationService = $notificationService;
     }
 
     public function _all()
@@ -155,76 +161,16 @@ class NotificationController extends Controller
 
     public function store(Request $request)
     {
-        $rules = [
-            'target' => 'string|required',
-            'type' => 'string|required',
-            'event' => 'string|required',
-            'description' => 'string|required',
-            'pushDate' => 'string|required',
-        ];
 
-        $req = [];
-
-        if (isset($request["img"])) {
-
-            $req = $request->validate(array_merge($rules, 
-                ['img' => 'image|mimes:png,jpeg,jpg,webp|max:2048']
-            ));
-            
-            $img = $req['img'];
-
-            if (get_class($img) === 'Illuminate\Http\UploadedFile') {
-                $img_pth = $img->storeAs('public', 
-                    uniqid() . '_' . $img->getClientOriginalName()
-                );
-            } 
-
-            $req["img"] = Storage::url($img_pth);
-            
+        $res = $this->notificationService->createNotification($request);
+        
+        if ($res) {
+            return response($res[0], $res[1]);
         } else {
-            $req = $request->validate($rules);
-            $req["img"] = null;
+
+            return response()->noContent();
         }
 
-        $current_user = Auth::user()->id;
-
-        $insert_rule = [
-            'type' => $req['type'],
-            'event' => $req['event'],
-            'description' => $req['description'],
-            'img' => $req["img"],
-            'push_date' => Carbon::createFromFormat('Y-m-d\TH:i:s.uP',
-                $req['pushDate'], 'UTC')->timezone('Asia/Manila')
-        ];
-
-        foreach (explode(',', $req['target']) as $v) {
-
-            if (User::where('id', $v)->first()) {
-
-                $data = new Notification($insert_rule);
-                $data->from_id = $current_user;
-                $data->for_id = $v;
-                $data->save();
-
-            } elseif ($v == 'all') {
-
-                $data = new Notification($insert_rule);
-                $data->from_id = $current_user;
-                $data->for_id = null;
-                $data->save();
-                
-            } else {
-
-                return response([
-                    'message' => 'Invalid target data.'
-                ], 422);
-
-            }
-            
-        }
-
-
-        return response()->noContent();
     }
 
     private function toISOString($time) {

@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('student_violations', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->primary()->default(DB::raw('(UUID())'));
             $table->char('violation_id');
             $table->char('violator_id');
             $table->char('guard_id');
