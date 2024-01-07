@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('event'); // main gist ()
             $table->text('description')->nullable(); // implications
             $table->string('img')->nullable(); // cover photo
-            $table->timestamp('push_date')->default(\DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+            $table->timestamp('push_date')->default(\DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('is_read')->nullable();
             $table->timestamp('is_received')->nullable();
             $table->timestamps();

@@ -63,7 +63,7 @@ class NotificationController extends Controller
         return response($result, 200);
     }
 
-    public function mark($id) // user notif
+    public function mark($id) // user mark as read
     {
         $current_user = Auth::user();
         $target = Notification::withoutTrashed()
@@ -74,7 +74,7 @@ class NotificationController extends Controller
         $target->save();
     }
 
-    public function markAll() // user notif
+    public function markAll()
     {
 
         $current_user = Auth::user();
@@ -105,6 +105,7 @@ class NotificationController extends Controller
                       ->orWhereNull('for_id');
             })
             ->whereBetween('push_date', [$startOfMonth, $now])
+            ->latest()
             ->get();
 
         $result = [];
@@ -132,6 +133,7 @@ class NotificationController extends Controller
 
             if ($v['for_id'] === null) {
                 $queue['all'] = true;
+                $queue['isReceived'] = $this->toISOString($v['is_received']);
             }
 /*
             if ($agent['role']['slug'] != 'student') {
@@ -143,12 +145,9 @@ class NotificationController extends Controller
             }
 */
             array_push($result, $queue);
-        }
-
-        $all->each(function ($v) {
-            $v->is_received = now();
+            $v->is_received = Carbon::now();
             $v->save();
-        });
+        }
 
         return response($result, 200);
 

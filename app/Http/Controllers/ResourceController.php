@@ -300,8 +300,8 @@ class ResourceController extends Controller
         $result = [];
         $locations = SchoolLocation::all();
 
-        foreach ($locations as $location1) {
-            $result[$location1->location] = count(Student::where('location_id', $location1)->get());
+        foreach ($locations as $v) {
+            $result[$v->location] = count(Student::where('location_id', $v->id)->get());
         }
 
         return $result;
