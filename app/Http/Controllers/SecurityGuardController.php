@@ -104,8 +104,8 @@ class SecurityGuardController extends Controller
     public function addViolation(Request $request) {
 
         $fields = $request->validate([
-            'violation_id' => 'required|string',
-            'violator_id' => 'required|string',
+            'violation_id' => 'required|string|min:36|max:36',
+            'violator_id' => 'required|string|min:36',
             //'guard_id' => 'required|string',
             'note' => 'string|nullable',
         ]);

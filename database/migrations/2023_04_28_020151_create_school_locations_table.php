@@ -17,6 +17,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('location');
             $table->string('location_slug');
+            $table->string('x_pos');
+            $table->string('y_pos');
             $table->timestamps();
         });
     }

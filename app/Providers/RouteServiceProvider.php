@@ -66,6 +66,9 @@ class RouteServiceProvider extends ServiceProvider
             Route::prefix('api/notification')
                 ->group(base_path('routes/api/notification.php'));
 
+            Route::prefix('api/analytics')
+                ->group(base_path('routes/api/analytics.php'));
+
         });
     }
 
