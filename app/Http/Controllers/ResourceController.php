@@ -320,14 +320,14 @@ class ResourceController extends Controller
     public function walletTopUp(Request $request){
         $fields = $request->validate([
             'user_id' => 'required|string',
-            'value' => 'required|string'
+            'amount' => 'required|string'
         ]);
 
         $wallet = Wallet::where('user_id', $fields['user_id'])->first();
         if(!$wallet) {
             return $this->throwException('Wallet not found', 422);
         }
-        $wallet->balance += $fields['value'];
+        $wallet->balance += $fields['amount'];
         $wallet->save();
         return $wallet;
     }
