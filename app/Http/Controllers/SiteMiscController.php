@@ -47,10 +47,10 @@ class SiteMiscController extends Controller
                 'text' => 'json',
             ]);
             
-            CMSLanding::create([
-                'type' => 'logotext',
-                'value' => $req['text']
-            ]);
+            CMSLanding::updateOrCreate(
+                ['type' => 'logotext'],
+                ['value' => $req['text']]
+            );
  
         }
 
