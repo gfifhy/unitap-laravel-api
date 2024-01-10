@@ -44,7 +44,7 @@ class AuthController extends Controller
             return  $this->throwException('Wrong password', '400');
         }
         $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
-        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'Lax');
+        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, env('SESSION_SECURE_COOKIE', true), true, false, 'Lax');
         return response($this->getUserProfileData($user), 200)->withCookie($cookie);
     }
 
@@ -81,7 +81,7 @@ class AuthController extends Controller
             'wallet' => $wallet,
         ];
 
-        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, env('SESSION_SECURE_COOKIE', true), true, false, 'None');
         return response($result, 201)->withCookie($cookie);
     }
     public function adminLogin(Request $request)
@@ -111,7 +111,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'role' => $role,
             ];
-            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, env('SESSION_SECURE_COOKIE', true), true, false, 'None');
             return response($result, 201)->withCookie($cookie);
         }
         else {
@@ -159,7 +159,7 @@ class AuthController extends Controller
             ];
             Auth()->guard_information = $result;
 
-            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+            $cookie = cookie('auth_token', $token, 60*24*3, '/', null, env('SESSION_SECURE_COOKIE', true), true, false, 'None');
             return response($result, 201)->withCookie($cookie);
         }
         else if ($role->slug == 'guidance-staff') {
@@ -173,7 +173,7 @@ class AuthController extends Controller
             return $this->throwException('Invalid role', 400);
         }
 
-        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, env('SESSION_SECURE_COOKIE', true), true, false, 'None');
         return response($result, 201)->withCookie($cookie);
     }
     public function profile(Request $request){

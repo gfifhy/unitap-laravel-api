@@ -33,7 +33,7 @@ class WebAuthnLoginController
     {
         $user = $request->login();
         $token = $user->createToken('token', ['*'], Carbon::now()->addDays(3))->plainTextToken;
-        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, true, true, false, 'None');
+        $cookie = cookie('auth_token', $token, 60*24*3, '/', null, env('SESSION_SECURE_COOKIE', true), true, false, 'None');
         //$user->role = Auth::user()->role;
         return response()->noContent()->withCookie($cookie);
     }
