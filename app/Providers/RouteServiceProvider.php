@@ -63,6 +63,9 @@ class RouteServiceProvider extends ServiceProvider
             Route::prefix('api/landing')
                 ->group(base_path('routes/api/landing.php'));
 
+            Route::prefix('api/site')
+                ->group(base_path('routes/api/site.php'));
+
             Route::prefix('api/notification')
                 ->group(base_path('routes/api/notification.php'));
 

@@ -9,7 +9,6 @@ use App\Services\NotificationService;
 use App\Services\Utils\FileServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class NotificationController extends Controller
 {
