@@ -14,6 +14,7 @@ Route::group(['middleware' => ['auth:sanctum','role:student']], function () {
     Route::get('/product', [ProductController::class, 'index']);
     Route::get('/product/{id}', [ProductController::class, 'getProduct']);
     Route::post('/order', [StudentController::class, 'order'])->name('order.products');
+    //Route::post('/test', [StudentController::class,'testFunction'])->name('student.test.route');
 });
 
 

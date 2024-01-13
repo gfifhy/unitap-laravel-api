@@ -52,16 +52,57 @@ class StudentController extends Controller
             'product_id' => "required|string",
             'quantity' => "required|string",
         ]);
+        $studentWallet = Wallet::where('user_id', auth()->user()->id)->first();
         $product = Product::where('id', $fields['product_id'])->first();
+
+        if(!$product){
+            return response(["message"=>"Product not found"], 422);
+        }
+        if(($product->price*$fields['quantity']) > $studentWallet->balance){
+            return response(["message"=>"Insufficient Fund"], 400);
+        }
         $user = User::where('id', $product->user_id)->first();
+        $studentWallet->balance = $studentWallet->balance - ($product->price*$fields['quantity']) ;
+        $studentWallet->save();
+
         $order = Order::create([
             'product_id' => $fields['product_id'],
             'buyer_id' => Auth::user()->id,
             'seller_id' => $user->id,
             'status' => 'processing',
+            'quantity' => $fields['quantity'],
         ]);
 
         return response($order, 201);
-
     }
+    public function testFunction(Request $request) {
+        $fields = $request->validate([
+            'product_id' => "required|string",
+            'quantity' => "required|string",
+        ]);
+        $studentWallet = Wallet::where('user_id', auth()->user()->id)->first();
+        $product = Product::where('id', $fields['product_id'])->first();
+
+        if(!$product){
+            return response(["message"=>"Product not found"], 422);
+        }
+        if(($product->price*$fields['quantity']) > $studentWallet->balance){
+            return response(["message"=>"Insufficient Fund"], 400);
+        }
+        $user = User::where('id', $product->user_id)->first();
+        $studentWallet->balance = $studentWallet->balance - ($product->price*$fields['quantity']) ;
+        $studentWallet->save();
+
+        $order = Order::create([
+            'product_id' => $fields['product_id'],
+            'buyer_id' => Auth::user()->id,
+            'seller_id' => $user->id,
+            'status' => 'processing',
+            'quantity' => $fields['quantity'],
+        ]);
+
+        return response($order, 201);
+    }
+
+
 }
