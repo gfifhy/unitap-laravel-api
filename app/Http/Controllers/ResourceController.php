@@ -10,6 +10,7 @@ use App\Models\Store;
 use App\Models\Student;
 use App\Models\StudentGuardian;
 use App\Models\StudentViolation;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Violation;
 use App\Models\Wallet;
@@ -328,7 +329,16 @@ class ResourceController extends Controller
             return $this->throwException('Wallet not found', 422);
         }
         $wallet->balance += $fields['amount'];
+
+        Transaction::create([
+            'wallet_id_sender' => Auth::user()->id,
+            'wallet_id_receiver' => $wallet->user_id,
+            'product_id' => '00000000-0000-0000-0000-000000000000',
+            'quantity' => $fields['amount']
+        ]);
+
         $wallet->save();
+        
         return $wallet;
     }
 

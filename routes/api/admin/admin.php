@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,7 @@ Route::group(['middleware' => ['role:admin']], function(){
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('archive.users');
     Route::get('/roles', [RoleController::class, 'index'])->name('index.role');
     Route::get('/data/violation', [ResourceController::class, 'totalViolation'])->name('data.violation');
+    Route::get('/transfers', [TransactionController::class, 'getUserTransfers']);
 });
 
 

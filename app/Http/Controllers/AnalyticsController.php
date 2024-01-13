@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use \DB;
 use App\Models\LocationHistory;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\StudentViolation;
+use App\Models\Transaction;
 use App\Models\Violation;
 use App\Traits\ExceptionTrait;
 use Carbon\Carbon;
@@ -23,7 +26,67 @@ class AnalyticsController extends Controller
         $this->now = Carbon::now();
     }
 
-    //public function gloss(Request $request) { }
+
+    public function getUserRecentStatistics() 
+    {
+
+        $user_id = Auth::user()->id;
+        
+        $startDate = $this->getRelativeTime();
+
+        $labels = [];
+        $orders = [];
+
+        for ($curr = $startDate; $curr <= $this->now; $curr->addDay()) {
+            $amount_day = 0;
+            $all = Order::where('buyer_id', $user_id)
+                ->whereDate('created_at', $curr)
+                ->get();
+
+            if ($all) {
+                foreach ($all as $k => $v) {
+                    $product = Product::where('id', $v->product_id)
+                        ->firstOrFail();
+                    $amount_day += $product->price * $v->quantity;
+                }
+            }
+
+            array_push($orders, $amount_day);
+            array_push($labels, $curr->copy()->locale('en')->shortDayName);
+        }
+
+        $startDate = $this->getRelativeTime();
+        $transactions = [];
+
+        for ($curr = $startDate; $curr <= $this->now; $curr->addDay()) {
+            $amount_day = 0;
+
+            $all = Transaction::where(function ($query) use ($user_id) {
+                    $query->where('wallet_id_receiver', $user_id)
+                          ->orWhere('wallet_id_sender', $user_id);
+                })->whereDate('created_at', $curr)
+                ->get();
+
+            if ($all) {
+                foreach ($all as $k => $v) {
+                    if ($v->wallet_id_receiver == $user_id) {
+                        $amount_day += $v->quantity;
+                    } else {
+                        $amount_day -= $v->quantity;
+                    }
+                }
+            }
+
+            array_push($transactions, $amount_day);
+        }
+
+        return response([
+            'orders' => $orders,
+            'transactions' => $transactions,
+            'labels' => $labels,
+        ], 200);
+
+    }
 
     public function violations($time, $id) {
 
@@ -105,14 +168,14 @@ class AnalyticsController extends Controller
         }
     }
     
-    private function getRelativeTime($time) {
+    private function getRelativeTime($time = '') {
         switch ($time) {
             case 'm':
                 return Carbon::now()->startOfMonth()->subMonth();
             case 'y':       
                 return Carbon::now()->startOfYear()->subYear();
             default:
-                return Carbon::now()->startOfWeek(1);
+                return Carbon::now()->subWeeks(1);
         }
     }
 
