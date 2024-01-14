@@ -75,6 +75,9 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::where('id', $id)->first();
+        if (!$user) {
+            $user = User::where('nfc_id', $id)->first();
+        }
         $user->user_image = $this->fileService->download($user->user_image, $user->id);
         $user->user_signature = $this->fileService->download($user->user_signature, $user->id);
         return $user;
